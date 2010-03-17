@@ -45,33 +45,31 @@ Client:
 ## Justification
 ### Let's review the evolution of browser-server interaction
 
-1. Traditional web development revolves around the [request-response]("http://en.wikipedia.org/wiki/Request-response") model: the client (browser) makes a request to the server, waits for a response, the server sends the resource, the connection closes and the browser renders the page.
-
+1. Traditional web development revolves around the [request-response]("http://en.wikipedia.org/wiki/Request-response") model: the client (browser) makes a request to the server, waits for a response, the server sends the resource, the connection closes and the browser renders the page.  
   >When you load a web page in-browser, you watch the spinner and wait for your lovely page to appear.  While you're waiting, there's usually nothing you can do.
   
         <form action="/new">
 
-2. With [AJAX]("http://en.wikipedia.org/wiki/Ajax_(programming)") we have the traditional request-response, but then we add in more requests *after the page has loaded* that will update the page in response to a user action.
+2. With [AJAX]("http://en.wikipedia.org/wiki/Ajax_(programming)") we have the traditional request-response, but then we add in more requests *after the page has loaded* that will update the page in response to a user action.  
   >When you vote on reddit, hn or whatnot, your vote is saved without reloading the page.
 
-`
+
         $.post('/new');
-`      
-3. With frequent [polling]("http://en.wikipedia.org/wiki/Polling_(computer_science)"), we make ajax requests at set intervals and update the page with any new content or changes.
+      
+3. With frequent [polling]("http://en.wikipedia.org/wiki/Polling_(computer_science)"), we make ajax requests at set intervals and update the page with any new content or changes.  
   >This stinks because of the lag between polls and the strain that each connection puts on the server
   
-`
+
         var since = 0; 
         function UpdateSince(){ since = (new Date).getTime(); };
         function Poll(){ $.get('/check?since='+since, ProcessResults); };
         function ProcessResults(data){ UpdateSince(); UpdatePage(data); };
         setTimeout(Poll, delay);
-`  
-4. With [Comet / BOSH / LongPolling]("http://en.wikipedia.org/wiki/Comet_(programming"), we make a regular AJAX request, but the server waits until it has data to send before replying to the request.  The browser initiates another request immediately upon response.
-
+  
+4. With [Comet / BOSH / LongPolling]("http://en.wikipedia.org/wiki/Comet_(programming"), we make a regular AJAX request, but the server waits until it has data to send before replying to the request.  The browser initiates another request immediately upon response.  
   >New facebook chat messages just "show up" right in your browser, without having to click anything.. your browser just uses one connection at a time.
   
-`
+
         var since = 0; 
         function UpdateSince(){ since = (new Date).getTime(); };
         function LongPoll(){ $.get('/check?since='+since, ProcessResults); };
@@ -79,7 +77,7 @@ Client:
           UpdateSince(); 
           UpdatePage(data); 
           LongPoll();
-        };`
+        };
 
 ## Implementation
 
