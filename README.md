@@ -1,46 +1,99 @@
 # Push-It.js
 ## The real-time web doesn't have to break your brain!
 ### Summary:
-What: Simple push server and client  
+What: Simple push server / comet server and client  
 Why: Developing real-time web applications shouldn't be complex  
 How: Node.js server, jQuery client  
-where: [http://github.com/aaronblohowiak/Push-It](http://github.com/aaronblohowiak/Push-It)
+Where: [http://github.com/aaronblohowiak/Push-It](http://github.com/aaronblohowiak/Push-It)  
+Who: [Aaron Blohowiak](mailto:aaron.blohowiak@gmail.com)
   
 ## Introduction 
 ### Overview
   This document introduces, justifies and explains the Push-It.js project.  We begin with a brief history of browser-server interaction & implementation, discuss existing solutions, introduce Push-It.js and describe the implementation.
 
 ### Example
-Server:
 
-        GET('/updates', function(req, res){
-          var old_updates = UpdatesSince(req.params.since);
-          if(old_updates.length){
-            reply({ status: OK, updates: old_updates });
-          }else{
-            wait();
-          }
-        });
-        
-        POST('/new', function(req, res){
-          Update.create(req.params, function(results){
-            if(result.status == OK ){
-              broadcastToWaiting(update);
-            }
-            reply(results);
-          });
-        });
-        
+####default-conf.json
+  
+    {
+      "server":{
+        "port": 8001
+      },
+      
+      "user_channel":{
+        "session_key": "session_id",
+        "cache_prefix": "sessions_users/",
+        "user_channel_prefix": "user/"
+      },
+
+      "shared_cache": {
+        "type":"memcached",
+        "host":"localhost",
+        "port":"11211"
+      }
+    }
+    
+App Server:
+
+    # ensure the session id is in a simple cookie
+    # ensure the real user id is in memcached
+  
+    #let a user know they have a new message
+    class MessageObserver < ActiveRecord::Observer      
+      def after_create(message)
+        PushIt.publish!(
+          :channels => ["user/#{recipient_id}"],
+          :payload => message.to_json,
+          :type => "Message"
+        )
+      end
+    end
+    
+    #publish comment updates to 
+    class CommentObserver < ActiveRecord::Observer
+      def after_create(comment)
+        PushIt.publish!(
+          :channels => publish_channels,
+          :payload => comment.to_json,
+          :type => "Comment"
+        )
+      end
+      
+      def on_update(comment)
+        PushIt.publish!(
+          :channels => publish_channels,
+          :payload => comment.to_json,
+          :type => "Comment"
+        )
+      end
+      
+      def publish_channels
+        #notify anyone viewing this resource's parent
+        channels = ["story/#{story_id}"]
+      
+        #add to most recent comment feed
+        channels << "comment/latest"
+      
+        #notify the author of the parent comment if it exists
+        channels << "user/#{parent.poster_id}" if parent
+      end
+    end
+    
 
 Client:
-        
-        Stream('/updates', function(err, updates){
-          if(err){
-            alert('whoops!');
-          }else{
-            ProcessUpdates(updates);
-          }
-        });
+    Handlers = {
+      "Messages" : {
+        "new" : function(channel, message){
+          
+        }
+      }
+    }
+    
+    var session_id = $.cookie('session_id');
+    var channels = [window.location.pathname]; //user channel is auto-magic
+    var endpoint = '/subscribe'
+    Subscribe(endpoint, {session_id: session_id, channels: channels});
+
         
 ## Justification
 ### Let's review the evolution of browser-server interaction
@@ -74,7 +127,7 @@ Client:
         function UpdateSince(){ since = (new Date).getTime(); };
         function LongPoll(){ $.get('/check?since='+since, ProcessResults); };
         function ProcessResults(data){ 
-          UpdateSince(); 
+          UpdateSince(data); 
           UpdatePage(data); 
           LongPoll();
         };
