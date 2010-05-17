@@ -1,0 +1,17 @@
+{
+  "server":{
+    "port": 8001
+  },
+  
+  "user_channel":{
+    "session_key": "session_id",
+    "cache_prefix": "sessions_users/",
+    "user_channel_prefix": "user/"
+  },
+
+  "shared_cache": {
+    "type":"memcached",
+    "host":"localhost",
+    "port":"11211"
+  }
+}
