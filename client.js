@@ -1,18 +1,21 @@
 (function() {
 	var last_message_timestamp = 0; //get from server.
+	var session_id = Math.random();
+
 	function initConnection() {
-		session_id = Math.random();
 		
 		var joinRequest = {
 			session_id: session_id,
-			location: window.location.href
+			location: window.location.href,
+			channels: ['pizza', 'bbc']
 		};
 
+    window.console.log("calling JOIN!!!");
+    
 		$.get('/join', joinRequest, function() {
 			waitForNewMessages();
 		});
 	};
-
   $(initConnection);
   
 	//join the room with the chosen nickname
@@ -44,7 +47,7 @@
 	//  and handles new messages when they are recieved
 	function waitForNewMessages() {
 		$.ajax({
-			url: '/listen?since=' + last_message_timestamp,
+			url: '/listen?since=' + last_message_timestamp+'&session_id='+session_id,
 			success: function(messages, textStatus, request) {
 				if (request.status !== 200) this.error(request, textStatus);
 				else {
@@ -66,7 +69,7 @@
 
 	function messagesRecieved(messages) {
 		for (var i = 0; i < messages.length; i++) {
-		  window.console.dir(messages[i]);
+		  window.console.log(messages[i]);
 			last_message_timestamp = messages[i].timestamp;
 			var date = new Date(messages[i].timestamp),
 				msg = messages[i].data;

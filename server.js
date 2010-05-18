@@ -1,8 +1,10 @@
 HOST = null; // localhost
 PORT = 8001; //run it as root :-)
 TIMEOUT = 30 * 1000; // 30 second timeout for open connections
+FIREHOSE_SECRET_CHANNEL = "__firehose";
 CHANNEL_CACHE_DURATION = 30 * 1000;
 
+//system requires
 var sys = require("sys"),
 	puts = sys.puts,
 	events = require("events"),
@@ -10,45 +12,37 @@ var sys = require("sys"),
 	url = require("url"),
 	readFile = require("fs").readFile,
 	net = require("net"),
-  repl = require("repl");;
+	repl = require("repl");
 
-net.createServer(function (socket) {
-  repl.start("node via Unix socket> ", socket);
+//connect with telnet /tmp/node-repl-sock
+net.createServer(function(socket) {
+	repl.start("node via Unix socket> ", socket);
 }).listen("/tmp/node-repl-sock");
 
+//custom requires	
 var ChannelHost = require("channel-host").ChannelHost;
 
-server = createServer(Connection);
+//our main http connection handler
+function cxn(request, response) {
+	try {
+		puts((new Date()).toString() + " " + "New connection: " + request.url);
+		new HTTPConnection(request, response);
+	} catch(err) {
+		sys.puts(err);
+	}
+}
+
+server = createServer(cxn);
 server.listen(PORT, HOST);
 sys.puts("Server at http://" + (HOST || "127.0.0.1") + ":" + PORT + "/");
 
-//long_connections is a queue of the clients awaiting some event
-server.long_connections = [];
-
-//however, we have to close the connections even if no event happens
-//  because some proxies don't do well with long-open connections
-//  so, iterate over the server's long_connections and return an empty array
-//  of notifications to the to-be-closed connections
-function respondToStaleConnections() {
-	if (server.long_connections.length) {
-		now = (new Date).getTime();
-		while ((server.long_connections[0].timestamp + TIMEOUT) < now) {
-			server.long_connections.shift().json([]);
-			if (! (server.long_connections.length)) break;
-		}
-	}
-	setTimeout(respondToStaleConnections, 1000);
-}
-
-respondToStaleConnections();
 //TODO: replace this with expriring collection with an onExpire handler.
-
 //This is the function that gets called on every new connection to the server
-//  we ensure the constructor call (new Connection) so we can use the new scope
+//  we ensure the constructor call (new HTTPConnection) so we can use the new scope
 //  does some up-front processing of request params 
 //  then finally, routes the connection to the appropriate handler
-function Connection(request, response) {
-	if (! (this instanceof Connection)) return new Connection(request, response);
+function HTTPConnection(request, response) {
+	if (! (this instanceof HTTPConnection)) return new HTTPConnection(request, response);
 
 	this.req = request;
 	this.res = response;
@@ -56,10 +50,8 @@ function Connection(request, response) {
 	this.params = this.url_info.query;
 	this.timestamp = (new Date()).getTime();
 
-	puts((new Date()).toString() + " " + "New connection: " + this.url_info.pathname);
-
 	this.route();
-	return false;
+	return {};
 };
 
 //The prototype of all connections contains convienence functions for responding
@@ -69,7 +61,7 @@ function Connection(request, response) {
 //  route passes a connection to a handler if one is registered for that path
 //    if the path is unregistered, it attempts to read a file from disk
 //    if there is an error reading file from disk, returns 404
-Connection.prototype = {
+HTTPConnection.prototype = {
 	respond: function(status, body, type) {
 		var header = [
 			["Content-Type", type],
@@ -80,7 +72,9 @@ Connection.prototype = {
 	},
 
 	json: function(obj, code) {
+		obj || (obj = {});
 		code || (code = 200);
+		obj.timestamp || (obj.timestamp = (new Date()).getTime());
 		this.respond(code, JSON.stringify(obj), "application/json");
 	},
 
@@ -94,7 +88,10 @@ Connection.prototype = {
 
 		if (path in Routes) Routes[path](connection);
 		else {
-			readFile(__dirname + '/' + path, 'utf8', function(err, data) {
+			//this is development static file serving.
+			//do not use this for anything important.
+			//use a cdn or a real file server for static assets, PLEASE!
+			readFile(__dirname + '/' + path, function(err, data) {
 				if (err) connection.notFound({});
 				else connection.respond(200, data, "text/" + path.split('.').slice(-1));
 			});
@@ -113,13 +110,13 @@ Routes["/"] = function(connection) {
 
 //endpoint for clients awaiting updates
 //  returns messages created since the since query param
-//  if there are none, adds the connection to server.long_connections 
 Routes["/listen"] = function(connection) {
 	// var since = parseInt(connection.params.since || 0, 10),
 	//  messages = channel.messagesSince(since);
 	// if (messages.length > 0) connection.json(messages);
 	// else 
-	server.long_connections.push(connection);
+	var session = nodeSessions.sessions[connection.params.session_id];
+	session.connect(connection);
 };
 
 //endpoint for clients that want to join or "log in"
@@ -127,7 +124,8 @@ Routes["/listen"] = function(connection) {
 //  joins the default channel
 //  returns the resulting session object
 Routes["/join"] = function(connection) {
-	var session = node_sessions.create(connection.params.session_id, connection.params);
+	var session = nodeSessions.create(connection.params.session_id, connection.params, connection);
+
 	//this is where some magic will happen!
 	//  set up subscriptions here!
 	connection.json(session);
@@ -140,7 +138,7 @@ Routes["/join"] = function(connection) {
 Routes["/leave"] = function(connection) {
 	try {
 		if (connection.params && connection.params.session_id) {
-		  node_sessions.destroy(connection.params.session_id);
+			nodeSessions.destroy(connection.params.session_id);
 		}
 	} finally {
 		connection.json({});
@@ -151,38 +149,110 @@ Routes["/leave"] = function(connection) {
 Routes["/publish"] = function(connection) {
 	var channel = connection.params.channel;
 	data = connection.params.message;
-	channels.publish(channel, data);
+	channelHost.publish(channel, data);
+	connection.json({});
 };
 
-//stores the browser window session
-var NodeSessions = function(){
-  this.sessions = {};
-};
+//stores the concept of the connection between the window and the channels.
+//  handles physical connections closing and reopening
+//  queues data for delivery to end user
+function NodeSession(id, params, channels) {
+	sys.puts(sys.inspect([id, params, channels]));
 
-NodeSessions.prototype = {
-	create: function(session_id, params) {
-		sessions[session_id] = params;
-		return {
-			session_id: session_id
+	this.session_id = id;
+	this.creationParams = params;
+	this.channels = channels;
+	this.outboundQueue = [];
+	this.connections = [];
+
+	//this way receiveMessage is tightly bound to this NodeSession
+	var self = this;
+	this.receiveMessage = function(channel, data) {
+		self.outboundQueue.push({
+			channel: channel,
+			data: data,
+			timestamp: Date.now()
+		});
+
+		var connection;
+		for (var i = self.connections.length - 1; i >= 0; i--) {
+			try {
+				connection = self.connections[i];
+				connection.json(self.outboundQueue);
+				clearTimeout(connection.timeout);
+			} catch(e) {};
 		};
+
+		self.connections = [];
+		self.outboundQueue = [];
+	};
+
+	return this;
+};
+
+NodeSession.prototype = {
+	connect: function(connection) {
+		if (this.outboundQueue.length) {
+			connection.json(self.outboundQueue);
+			self.outboundQueue = [];
+		} else {
+			//TODO: get rid of this global function
+			this.connections.push(connection);
+			var self = this;
+			var timeout = setTimeout(function() {
+				self.disconnect(connection);
+				connection.json([]);
+			},
+			TIMEOUT);
+			connection.timeout = timeout;
+		}
 	},
 
-	destroy: function(session_id) {
-		delete this.sessions[session_id];
-	},
-	
-	tellAll: function(channel, msg){
-	  sys.puts("BROADCASTING: "+channel+" :::: "+ msg);
-  	while (server.long_connections.length) {
-			server.long_connections.shift().json([{channel: channel, message: msg}]);
-		}
+	disconnect: function(connection) {
+		var cxnIdx = this.connections.indexOf(connection);
+		if (cxnIdx > -1) this.connections.splice(0, cxnIdx);
 	}
 };
 
-node_sessions = new NodeSessions();
+//stores the browser window sessions
+var Clients = function() {
+	this.sessions = {};
+};
 
-channels = new ChannelHost(CHANNEL_CACHE_DURATION);
+Clients.prototype = {
+	create: function(session_id, params, connection) {
+		var subscriptions = params.channels || [];
+		var firehoseIdx = subscriptions.indexOf("__firehose");
+		var firehose = false;
 
-channels.firehose(function(channel, msg) {
-  node_sessions.tellAll(channel, msg);
-});
+		sys.puts("creating session for " + session_id);
+
+		if (firehoseIdx > -1) {
+			subscriptions.splice(firehoseIdx, 1);
+			firehose = true;
+		}
+
+		//now, make the subscriptions
+		var session = new NodeSession(session_id, params, subscriptions);
+		this.sessions[session_id] = session;
+
+		//activate subscriptions
+		for (var i = subscriptions.length - 1; i >= 0; i--) {
+			channelHost.observe(subscriptions[i], session.receiveMessage);
+		};
+
+		if (firehose) {
+			channelHost.firehose(session.receiveMessage);
+		}
+
+		return session;
+	},
+
+	destroy: function(session_id) {
+		sys.puts("destroying: " + session_id);
+		delete this.sessions[session_id];
+	}
+};
+
+nodeSessions = new Clients();
+channelHost = new ChannelHost(CHANNEL_CACHE_DURATION);

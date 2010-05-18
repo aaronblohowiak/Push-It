@@ -1,98 +1,82 @@
-# Push-It.js
+# Push-It.js [Status: Pre-Alpha]
 ## The real-time web doesn't have to break your brain!
 ### Summary:
 What: Simple push server / comet server and client  
 Why: Developing real-time web applications shouldn't be complex  
-How: Node.js server, jQuery client  
+How: Node.JS server, jQuery client  
 Where: [http://github.com/aaronblohowiak/Push-It](http://github.com/aaronblohowiak/Push-It)  
 Who: [Aaron Blohowiak](mailto:aaron.blohowiak@gmail.com)
   
 ## Introduction 
 ### Overview
-  This document introduces, justifies and explains the Push-It.js project.  We begin with a brief history of browser-server interaction & implementation, discuss existing solutions, introduce Push-It.js and describe the implementation.
-
+  Push-It lets you add push notifications to your existing web app *very* easily.
+  
+  There are two parts: the server, and the client.
+  
+  The client depends on jQuery (tested with 1.4.2)
+  The server depends on Node.JS (tested with 0.1.95)
+  
+  The client "joins" the server with a list of streams that it would like to subscribe to with a POST.
+  Then, it opens a virtually persistent connection to the server. (It is actually long-polling, but that is an implementation detail, and WebSocket support will be added soon.)
+  The server starts sending your client any new data on the streams that it is subscribed to.
+  The client has a callback (messagesReceived) that gets an array of objects that have the channel name, the data and a unix timestamp.
+  
+  That's it!
+  
+  Oh yea, how do you create new event?
+  
+  Presently, anybody can add data to any channel with a simple REST call.
+  This could be browsers, it could be your app server, go nuts.
+  
+  There is not currently any concept of a "User", only a browser-window and its connection.
+  
 ### Example
 
-####default-conf.json
-  
-    {
-      "server":{
-        "port": 8001
-      },
-      
-      "user_channel":{
-        "session_key": "session_id",
-        "cache_prefix": "sessions_users/",
-        "user_channel_prefix": "user/"
-      },
+Client:
 
-      "shared_cache": {
-        "type":"memcached",
-        "host":"localhost",
-        "port":"11211"
-      }
+    function messageReceived(channel, data, timestamp){
+       /* update UI */
     }
     
+    var channels = ["stories/5", "calendar"];
+    pushIt = PushIt(channels, messageReceived);
+    
+    //unsubscribe
+    pushIt.ignore("messages");
+    
+    //subscribe at runtime
+    pushIt.subscribe("calendar/2");
+    
+    
 App Server:
-
-    # ensure the session id is in a simple cookie
-    # ensure the real user id is in memcached
-  
-    #let a user know they have a new message
-    class MessageObserver < ActiveRecord::Observer      
-      def after_create(message)
-        PushIt.publish!(
-          :channels => ["user/#{recipient_id}"],
-          :payload => message.to_json,
-          :type => "Message"
-        )
-      end
-    end
     
     #publish comment updates to 
     class CommentObserver < ActiveRecord::Observer
       def after_create(comment)
         PushIt.publish!(
-          :channels => publish_channels,
-          :payload => comment.to_json,
-          :type => "Comment"
+          :channels => publish_channels(comment),
+          :payload => comment.to_json
         )
       end
       
       def on_update(comment)
         PushIt.publish!(
-          :channels => publish_channels,
-          :payload => comment.to_json,
-          :type => "Comment"
+          :channels => publish_channels(comment),
+          :payload => comment.to_json
         )
       end
       
-      def publish_channels
+      def publish_channels(comment)
         #notify anyone viewing this resource's parent
-        channels = ["story/#{story_id}"]
+        channels = ["stories/#{story_id}"]
       
         #add to most recent comment feed
-        channels << "comment/latest"
-      
-        #notify the author of the parent comment if it exists
-        channels << "user/#{parent.poster_id}" if parent
+        channels << "comments/latest"
+        
+        #add to author's comment feed
+        channels << "/users/#{comment.user.id}/comments"
       end
     end
-    
-
-Client:
-    Handlers = {
-      "Messages" : {
-        "new" : function(channel, message){
-          
-        }
-      }
-    }
-    
-    var session_id = $.cookie('session_id');
-    var channels = [window.location.pathname]; //user channel is auto-magic
-    var endpoint = '/subscribe'
-    Subscribe(endpoint, {session_id: session_id, channels: channels});
 
         
 ## Justification

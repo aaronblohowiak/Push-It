@@ -41,6 +41,7 @@ ChannelHost.prototype = {
 		var messages = this.messageCache.get(channel),
 	      now = (new Date()).getTime(),
 	      newMessage = {message: data, timestamp: now};
+		
 		messages.push(newMessage);
 
 		//let's decouple the receipt of data from the notification
@@ -54,7 +55,7 @@ ChannelHost.prototype = {
 	notify: function(channel, data) {
 		var observers = this.observers.get(channel);
 		for (var i = observers.length - 1; i >= 0; i--) {
-			observers[i](null, data);
+			observers[i](channel, data);
 		};
 
 		observers = this.firehoseObservers;
