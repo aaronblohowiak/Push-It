@@ -3,13 +3,16 @@ PORT = 8001; //run it as root :-)
 TIMEOUT = 30 * 1000; // 30 second timeout for open connections
 FIREHOSE_SECRET_CHANNEL = "__firehose";
 CHANNEL_CACHE_DURATION = 30 * 1000;
-
+MEGABYTE = 1048576;
+/* this is how many bytes are in a MB */
+MAX_POST_SIZE = 0.5 * MEGABYTE; // this is a message bus, not a file server
 //system requires
 var sys = require("sys"),
 	puts = sys.puts,
 	events = require("events"),
 	createServer = require("http").createServer,
 	url = require("url"),
+	querystring = require("querystring"),
 	readFile = require("fs").readFile,
 	net = require("net"),
 	repl = require("repl");
@@ -20,6 +23,7 @@ net.createServer(function(socket) {
 }).listen("/tmp/node-repl-sock");
 
 //custom requires	
+//this requires that you have my JavaScript-datastructures project in your $NODE_PATH
 var ChannelHost = require("channel-host").ChannelHost;
 
 //our main http connection handler
@@ -49,9 +53,40 @@ function HTTPConnection(request, response) {
 	this.url_info = url.parse(this.req.url, true);
 	this.params = this.url_info.query;
 	this.timestamp = (new Date()).getTime();
+	this.bodyChunks = [];
+	var self = this;
 
-	this.route();
-	return {};
+	//Cache whole post body in memory before doing anything
+	if (request.method == "GET") {
+		this.route();
+	} else {
+		if (parseInt(request.headers['content-length'], 10) > MAX_POST_SIZE) {
+			self.json({
+				error: "content-length too big"
+			},
+			413);
+		};
+
+		request.addListener('data', function(chunk) {
+			self.bodyChunks.push(chunk);
+		});
+
+		request.addListener('end', function() {
+			sys.puts('end received');
+			try{
+			  self.params || (self.params = {})
+  			self.postBody = self.bodyChunks.join('');
+        
+        sys.puts("body: "+sys.inspect(querystring.parse(self.postBody)));
+        sys.puts("body: "+sys.inspect(querystring.parse(self.postBody).getOwnProperties()));
+        
+  			self.route();			  
+			}
+			catch(err) {
+    		sys.puts(err);
+    	}
+		});
+	}
 };
 
 //The prototype of all connections contains convienence functions for responding

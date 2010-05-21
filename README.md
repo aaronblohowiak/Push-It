@@ -1,5 +1,7 @@
-# Push-It.js [Status: Pre-Alpha]
-## The real-time web doesn't have to break your brain!
+# Push-It [Status: Pre-Alpha]
+This project is not yet ready for use, even by bleeding-edge hardcore devs ;)
+## Make your web-app Real-Time.  Comet for Ruby on Rails, Django and PHP
+Polling is terrible and uses lots of server resources.  You should be using push instead.  Make one push from your application to Push-It, and Push-It sends your data out to all the web browsers.
 ### Summary:
 What: Simple push server / comet server and client  
 Why: Developing real-time web applications shouldn't be complex  

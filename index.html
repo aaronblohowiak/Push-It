@@ -10,6 +10,34 @@
   <link rel="stylesheet" href="/screen.css" type="text/css" media="screen" title="no title" charset="utf-8" />
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js" type="text/javascript" charset="utf-8"></script>
   <script src="/client.js" type="text/javascript" charset="utf-8"></script>
+  
+  <script>
+  //haha, this is my awesome UI code!!!
+
+  	$(document).delegate('#post', 'submit', function(event) {
+  		event.preventDefault();
+
+  		var chan = $('#post .channel'),
+  			channel = chan.val();
+      chan.val('');
+      
+      var msg = $('#post .message'),
+  			message = msg.val();
+      msg.val('');
+    
+  		if (message.length){
+  		  $.get('/publish', {
+  		    channel: channel,
+    			message: message
+    		}); 
+  		}else{
+  		  alert("type something for a message before you send!");
+  		}
+
+  		return false;
+  	});
+	
+	</script>
 </head>
 <body>
   <div id="header">

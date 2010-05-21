@@ -18,6 +18,7 @@
 //    //get old data if in cache
 //    channelHost.old('channel', since)
 //
+//this requires that you have my JavaScript-datastructures project in your $NODE_PATH
 var ExpiringQueue = require('expiring-queue').ExpiringQueue,
 	ReadThroughCacheSync = require('read-through-cache-sync').ReadThroughCacheSync;
 
