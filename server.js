@@ -136,6 +136,7 @@ HTTPConnection.prototype = {
 Routes = {};
 
 Routes.mount = new RegExp(/^\/push-it/);
+Routes.static_prefix = __dirname + '/example/';
 
 Routes.route = function(connection) {
  	var path = connection.path;
@@ -150,8 +151,12 @@ Routes.missing = function(connection) {
 	//do not use this for anything important.
 	//use a cdn or a real file server for static assets, PLEASE!
 	var path = connection.path;
-	sys.puts("trying to load static: "+ __dirname + '/' + path);
-	readFile(__dirname + '/example/' + path, function(err, data) {
+	sys.puts("trying to load static file: "+ __dirname + '/' + path);
+	if(path.charAt(path.length - 1) == "/"){
+	  path = path + "index.html";
+	}
+	
+	readFile(this.static_prefix + path, function(err, data) {
 		if (err) connection.notFound({});
 		else connection.respond(200, data, "text/" + path.split('.').slice(-1));
 	});	
@@ -160,7 +165,7 @@ Routes.missing = function(connection) {
 Routes["/"] = function(connection) {
 	readFile(__dirname + '/example/debug/index.html', 'utf8', function(err, data) {
 	  if (err){
-	    sys.puts("checking for static: "+ __dirname + '/example/debug/index.html')
+	    sys.puts("checking for static file: "+ __dirname + '/example/debug/index.html')
 	    connection.notFound({});
 	  } 
 	  else connection.respond(200, data, "text/html");

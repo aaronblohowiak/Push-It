@@ -9,11 +9,14 @@
 
   <link rel="stylesheet" href="/screen.css" type="text/css" media="screen" title="no title" charset="utf-8" />
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js" type="text/javascript" charset="utf-8"></script>
-  <script src="client.js" type="text/javascript" charset="utf-8"></script>
+  <script src="/push-it-client.js" type="text/javascript" charset="utf-8"></script>
   
   <script>
   //haha, this is my awesome UI code!!!
-
+  	$(function(){
+  	  window.pushIt = new PushIt({prefix: "/push-it", channels:["bbc"]});
+  	})
+	
   	$(document).delegate('#post', 'submit', function(event) {
   		event.preventDefault();
 
@@ -28,7 +31,7 @@
       msg.val('');
     
   		if (message.length){
-  		  $.get('/publish', {
+  		  window.pushIt.publish({
   		    channel: channel,
     			message: message
     		}); 
@@ -39,9 +42,7 @@
   		return false;
   	});
 	
-	$(function(){
-	  new PushIt({prefix: "/push-it/debug"});
-	})
+
 	</script>
 </head>
 <body>

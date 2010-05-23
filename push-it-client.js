@@ -6,10 +6,17 @@
 		this.session_id = Math.random();
 		this.prefix = options.prefix;
 		this.prefix || (this.prefix = '');
+		
+		this.channels = [window.location.href];
+		if(options.channels){
+		  this.channels = this.channels.concat(options.channels);
+		}
+		
+		console.log(options.channels);
 
 		//if we can, notify the server that we're going away.
 		$(window).unload(function() {
-			jQuery.get(this.prefix + "/leave", {
+			jQuery.get(self.prefix + "/leave", {
 				session_id: this.session_id
 			},
 			function(data) {},
@@ -24,17 +31,17 @@
 
 	PushIt.prototype = {
 		initConnection: function() {
-			console.log("init connection");
+			var self = this;
 
 			var joinRequest = {
 				session_id: this.session_id,
 				location: window.location.href,
-				channels: [window.location.href]
+				channels: self.channels
 			};
 
 			//once we have created this browser session, our tranport can start.
 			$.post(this.prefix + '/join', joinRequest, function() {
-				waitForNewMessages();
+				self.waitForNewMessages();
 			});
 		},
 
@@ -45,15 +52,18 @@
 			$.ajax({
 				url: this.prefix + '/listen?since=' + this.last_message_timestamp + '&session_id=' + this.session_id,
 				success: function(messages, textStatus, request) {
-					if (messages && messages.length) messagesRecieved(messages);
+					if (messages && messages.length) self.messagesRecieved(messages);
 
-					if (request.status == 200) waitForNewMessages();
+					if (request.status == 200) self.waitForNewMessages();
 					else this.error(request, textStatus);
 
 				},
 				error: function(XMLHttpRequest, textStatus) {
 					//TODO: throw event.
-					setTimeout(self.waitForNewMessages, 10000);
+					setTimeout(function() {
+						self.waitForNewMessages();
+					},
+					10000);
 				},
 				type: "POST"
 			});
@@ -66,6 +76,21 @@
 				var date = new Date(messages[i].timestamp),
 					msg = messages[i].data;
 			}
+		},
+		
+		publish: function(data, success, error){
+      if(!data.hasOwnProperty("channel") || !data.hasOwnProperty("message")){
+        console.log("error: the object sent to publish must have channel and message properties");
+        return;
+      }
+			
+			$.ajax({
+				url: this.prefix + '/publish?'+ 'session_id=' + this.session_id,
+				success: success,
+				error: error,
+				data: data,
+				type: "POST"
+			});
 		}
 	};
 
