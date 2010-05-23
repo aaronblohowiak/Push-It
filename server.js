@@ -24,7 +24,7 @@ net.createServer(function(socket) {
 
 //custom requires	
 //this requires that you have my JavaScript-datastructures project in your $NODE_PATH
-var ChannelHost = require("channel-host").ChannelHost;
+var ChannelHost = require("./lib/channel-host").ChannelHost;
 
 //our main http connection handler
 function cxn(request, response) {
@@ -32,7 +32,7 @@ function cxn(request, response) {
 		puts((new Date()).toString() + " " + "New connection: " + request.url);
 		new HTTPConnection(request, response);
 	} catch(err) {
-		sys.puts(err);
+		sys.puts(err + err.trace);
 	}
 }
 
@@ -51,6 +51,10 @@ function HTTPConnection(request, response) {
 	this.req = request;
 	this.res = response;
 	this.url_info = url.parse(this.req.url, true);
+	this.path = this.url_info.pathname.replace(Routes.mount, '');
+	 
+	 sys.puts("adjusted path: " + this.path);
+	 
 	this.params = this.url_info.query;
 	this.timestamp = (new Date()).getTime();
 	this.bodyChunks = [];
@@ -72,21 +76,27 @@ function HTTPConnection(request, response) {
 		});
 
 		request.addListener('end', function() {
-			sys.puts('end received');
+			sys.puts('end of non-GET body received');
 			try{
-			  self.params || (self.params = {})
+			  self.params || (self.params = {});
   			self.postBody = self.bodyChunks.join('');
         
         sys.puts("body: "+sys.inspect(querystring.parse(self.postBody)));
-        sys.puts("body: "+sys.inspect(querystring.parse(self.postBody).getOwnProperties()));
         
+        self.post_params = querystring.parse(self.postBody);
+        
+        for(var param in self.post_params){
+          self.params[param] || ( self.params[param] = self.post_params[param]);
+        }
   			self.route();			  
 			}
 			catch(err) {
-    		sys.puts(err);
+    		sys.puts(err+" "+err.trace);
     	}
 		});
 	}
+	
+	return this;
 };
 
 //The prototype of all connections contains convienence functions for responding
@@ -118,28 +128,42 @@ HTTPConnection.prototype = {
 	},
 
 	route: function() {
-		var connection = this,
-			path = connection.url_info.pathname;
-
-		if (path in Routes) Routes[path](connection);
-		else {
-			//this is development static file serving.
-			//do not use this for anything important.
-			//use a cdn or a real file server for static assets, PLEASE!
-			readFile(__dirname + '/' + path, function(err, data) {
-				if (err) connection.notFound({});
-				else connection.respond(200, data, "text/" + path.split('.').slice(-1));
-			});
-		}
+	  Routes.route(this);
 	}
 };
 
 //Routes object is a path to handler map
 Routes = {};
 
+Routes.mount = new RegExp(/^\/push-it/);
+
+Routes.route = function(connection) {
+ 	var path = connection.path;
+ 	sys.puts("routing: "+path);
+ 	
+	if (path in Routes) Routes[path](connection);
+	else Routes.missing(connection); 
+};
+
+Routes.missing = function(connection) {
+	//this is development static file serving.
+	//do not use this for anything important.
+	//use a cdn or a real file server for static assets, PLEASE!
+	var path = connection.path;
+	sys.puts("trying to load static: "+ __dirname + '/' + path);
+	readFile(__dirname + '/example/' + path, function(err, data) {
+		if (err) connection.notFound({});
+		else connection.respond(200, data, "text/" + path.split('.').slice(-1));
+	});	
+}
+
 Routes["/"] = function(connection) {
-	readFile(__dirname + '/index.html', 'utf8', function(err, data) {
-		connection.respond(200, data, "text/html");
+	readFile(__dirname + '/example/debug/index.html', 'utf8', function(err, data) {
+	  if (err){
+	    sys.puts("checking for static: "+ __dirname + '/example/debug/index.html')
+	    connection.notFound({});
+	  } 
+	  else connection.respond(200, data, "text/html");
 	});
 };
 
@@ -151,7 +175,11 @@ Routes["/listen"] = function(connection) {
 	// if (messages.length > 0) connection.json(messages);
 	// else 
 	var session = nodeSessions.sessions[connection.params.session_id];
-	session.connect(connection);
+	if(session){
+	  session.connect(connection);
+	}else{
+	  connection.json({error: "Session Not found"}, 404)
+  }
 };
 
 //endpoint for clients that want to join or "log in"
@@ -215,7 +243,9 @@ function NodeSession(id, params, channels) {
 				connection = self.connections[i];
 				connection.json(self.outboundQueue);
 				clearTimeout(connection.timeout);
-			} catch(e) {};
+			} catch(err) {
+      		sys.puts(err+" "+err.trace);
+      	};
 		};
 
 		self.connections = [];
@@ -279,7 +309,6 @@ Clients.prototype = {
 		if (firehose) {
 			channelHost.firehose(session.receiveMessage);
 		}
-
 		return session;
 	},
 
