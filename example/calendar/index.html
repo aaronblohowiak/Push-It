@@ -3,18 +3,86 @@
 <head>
 <link rel='stylesheet' type='text/css' href='redmond/theme.css' />
 
-<link rel='stylesheet' type='text/css' href='fullcalendar.css' />
 
-<script type='text/javascript' src='jquery/jquery.js'></script>
-<script type='text/javascript' src='jquery/ui.core.js'></script>
-<script type='text/javascript' src='jquery/ui.draggable.js'></script>
-<script type='text/javascript' src='jquery/ui.resizable.js'></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js" type="text/javascript" charset="utf-8"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.1/jquery-ui.min.js" type="text/javascript" charset="utf-8"></script>
+<link rel='stylesheet' type='text/css' href='fullcalendar.css' />
 <script type='text/javascript' src='fc.min.js'></script>
+
 <script type='text/javascript' src='sample_events.js'></script>
+
+<script type='text/javascript' src='push-it-client.js'></script>
+
 
 <script type='text/javascript'>
 
-	$(document).ready(function() {
+  
+	$(document).ready(function() {  
+	  window.pushIt = new PushIt({prefix: '/push-it', channels:['calendar']});
+	  var dateFields = "_end _start end start".split(' ');
+
+    function serializeEvent(evt){
+      var copy = $.extend({}, evt);
+      delete copy["source"];
+
+      for (var i = dateFields.length - 1; i >= 0; i--){
+        var field = dateFields[i];
+        if(copy[field])
+          copy[field] = copy[field].toString();
+      };
+      return copy;
+    }
+    
+    function deserializeEvent(e){
+      try{
+        for (var j = dateFields.length - 1; j >= 0; j--){
+          var field = dateFields[j];
+          if(e[field]){
+            if(e[field] == "null"){
+              e[field] = null;
+            }
+            e[field] = new Date(e[field]);
+          }
+        };
+        
+        if(e.allDay) e.allDay = (e.allDay == "true");
+        //default to true
+        if(e.editable) e.editable = (e.editable == "true");
+        
+        return e;
+      }
+      catch(err){
+        console.log(err)
+      }
+    }
+    
+    window.pushIt.messagesRecieved= function(messages) {
+      var sourceEvent = null;
+			for (var i = 0; i < messages.length; i++) {
+				this.last_message_timestamp = messages[i].timestamp;
+        
+				var date = new Date(messages[i].timestamp),
+					evt = messages[i].data,
+					id = evt.id;
+					
+  				
+					sourceEvents = $('#calendar').fullCalendar( 'clientEvents' ,  id);
+          $(sourceEvents).each(function(i, source){
+            var remote = deserializeEvent(evt);
+            $.extend(source, remote);
+            $('#calendar').fullCalendar( 'updateEvent', source);
+          });
+
+			}
+		}
+		
+    function dumbPublish(evt){
+      window.pushIt.publish({
+        channel: "calendar",
+        message: serializeEvent(evt)
+      });
+    };
+    
 		window.calendar = $('#calendar').fullCalendar({
 			theme: true,
 			header: {
@@ -23,8 +91,13 @@
 				right: 'month,agendaWeek,agendaDay'
 			},
 			editable: true,
-			events: window.sampleEvents // from sample_events.js
+			events: window.sampleEvents, // from sample_events.js,
+			eventDrop: dumbPublish,
+			eventResize: dumbPublish
+			
 		});
+		
+		
 		
 	});
 
@@ -39,7 +112,8 @@
 		}
 
 	#calendar {
-		width: 900px;
+		width: 600px;
+		height: 1000px
 		margin: 0 auto;
 		}
 

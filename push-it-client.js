@@ -6,13 +6,11 @@
 		this.session_id = Math.random();
 		this.prefix = options.prefix;
 		this.prefix || (this.prefix = '');
-		
+
 		this.channels = [window.location.href];
-		if(options.channels){
-		  this.channels = this.channels.concat(options.channels);
+		if (options.channels) {
+			this.channels = this.channels.concat(options.channels);
 		}
-		
-		console.log(options.channels);
 
 		//if we can, notify the server that we're going away.
 		$(window).unload(function() {
@@ -51,12 +49,20 @@
 			self = this;
 			$.ajax({
 				url: this.prefix + '/listen?since=' + this.last_message_timestamp + '&session_id=' + this.session_id,
-				success: function(messages, textStatus, request) {
-					if (messages && messages.length) self.messagesRecieved(messages);
+				success: function(response, textStatus, request) {
+  				self.last_message_timestamp = response.timestamp;
+  				try{
+  				  messages = response.messages;
+  					if (messages && messages.length){
+  					  self.messagesRecieved(messages);
+  					} 
+  				}catch(err){
+  				  console.log("error processing messages");
+  				  console.log(err);
+  				}
 
-					if (request.status == 200) self.waitForNewMessages();
-					else this.error(request, textStatus);
-
+  				if (request.status == 200) self.waitForNewMessages();
+  				else this.error(request, textStatus);
 				},
 				error: function(XMLHttpRequest, textStatus) {
 					//TODO: throw event.
@@ -71,26 +77,26 @@
 
 		messagesRecieved: function(messages) {
 			for (var i = 0; i < messages.length; i++) {
-				window.console.log(messages[i]);
-				this.last_message_timestamp = messages[i].timestamp;
-				var date = new Date(messages[i].timestamp),
-					msg = messages[i].data;
+			  //override this with your own handler!
+				window.console.log("message: " + messages[i]);
 			}
 		},
-		
-		publish: function(data, success, error){
-      if(!data.hasOwnProperty("channel") || !data.hasOwnProperty("message")){
-        console.log("error: the object sent to publish must have channel and message properties");
-        return;
-      }
-			
-			$.ajax({
-				url: this.prefix + '/publish?'+ 'session_id=' + this.session_id,
-				success: success,
-				error: error,
+
+		publish: function(data, success, error) {
+			//			console.log("PUBLISHING");
+			if (!data.hasOwnProperty("channel") || !data.hasOwnProperty("message")) {
+				console.log("error: the object sent to publish must have channel and message properties");
+				return;
+			}
+
+			var options = {
+				url: this.prefix + '/publish?' + 'session_id=' + this.session_id,
 				data: data,
+				dataType: "json",
 				type: "POST"
-			});
+			};
+
+			$.ajax(options);
 		}
 	};
 

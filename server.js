@@ -235,18 +235,15 @@ function NodeSession(id, params, channels) {
 
 	//this way receiveMessage is tightly bound to this NodeSession
 	var self = this;
-	this.receiveMessage = function(channel, data) {
-		self.outboundQueue.push({
-			channel: channel,
-			data: data,
-			timestamp: Date.now()
-		});
+	this.receiveMessage = function(channel, message) {
+	  message.channel = channel;
+		self.outboundQueue.push(message);
 
 		var connection;
 		for (var i = self.connections.length - 1; i >= 0; i--) {
 			try {
 				connection = self.connections[i];
-				connection.json(self.outboundQueue);
+				connection.json({messages: self.outboundQueue, timestamp: Date.now()});
 				clearTimeout(connection.timeout);
 			} catch(err) {
       		sys.puts(err+" "+err.trace);
@@ -271,7 +268,7 @@ NodeSession.prototype = {
 			var self = this;
 			var timeout = setTimeout(function() {
 				self.disconnect(connection);
-				connection.json([]);
+				connection.json({timestamp: Date.now});
 			},
 			TIMEOUT);
 			connection.timeout = timeout;
