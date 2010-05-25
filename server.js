@@ -51,10 +51,7 @@ function HTTPConnection(request, response) {
 	this.req = request;
 	this.res = response;
 	this.url_info = url.parse(this.req.url, true);
-	this.path = this.url_info.pathname.replace(Routes.mount, '');
-	 
-	 sys.puts("adjusted path: " + this.path);
-	 
+	this.path = this.url_info.pathname.replace(Routes.mount, '');	 
 	this.params = this.url_info.query;
 	this.timestamp = (new Date()).getTime();
 	this.bodyChunks = [];
@@ -76,14 +73,11 @@ function HTTPConnection(request, response) {
 		});
 
 		request.addListener('end', function() {
-			sys.puts('end of non-GET body received');
 			try{
 			  self.params || (self.params = {});
-  			self.postBody = self.bodyChunks.join('');
-        
-        sys.puts("body: "+sys.inspect(querystring.parse(self.postBody)));
-        
+  			self.postBody = self.bodyChunks.join('');      
         self.post_params = querystring.parse(self.postBody);
+        sys.puts("body: "+sys.inspect(self.post_params));
         
         for(var param in self.post_params){
           self.params[param] || ( self.params[param] = self.post_params[param]);
@@ -140,8 +134,7 @@ Routes.static_prefix = __dirname + '/example/';
 
 Routes.route = function(connection) {
  	var path = connection.path;
- 	sys.puts("routing: "+path);
- 	
+
 	if (path in Routes) Routes[path](connection);
 	else Routes.missing(connection); 
 };
@@ -225,8 +218,6 @@ Routes["/publish"] = function(connection) {
 //  handles physical connections closing and reopening
 //  queues data for delivery to end user
 function NodeSession(id, params, channels) {
-	sys.puts(sys.inspect([id, params, channels]));
-
 	this.session_id = id;
 	this.creationParams = params;
 	this.channels = channels;
@@ -291,8 +282,6 @@ Clients.prototype = {
 		var subscriptions = params.channels || [];
 		var firehoseIdx = subscriptions.indexOf("__firehose");
 		var firehose = false;
-
-		sys.puts("creating session for " + session_id);
 
 		if (firehoseIdx > -1) {
 			subscriptions.splice(firehoseIdx, 1);

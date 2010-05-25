@@ -12,37 +12,33 @@
   <script src="/push-it-client.js" type="text/javascript" charset="utf-8"></script>
   
   <script>
-  //haha, this is my awesome UI code!!!
-  	$(function(){
-  	  window.pushIt = new PushIt({prefix: "/push-it", channels:["bbc"]});
-  	})
-	
-  	$(document).delegate('#post', 'submit', function(event) {
-  		event.preventDefault();
+    //this is my awesome UI code!!!
+    $(function() {
+    	window.pushIt = new PushIt({
+    		prefix: "/push-it",
+    		channels: ["bbc"]
+    	});
+    });
 
-  		var chan = $('#post .channel'),
-  			channel = chan.val();
-  			
-      chan.val('');
-      
-      var msg = $('#post .message'),
-  			message = msg.val();
-  			
-      msg.val('');
-    
-  		if (message.length){
-  		  window.pushIt.publish({
-  		    channel: channel,
+    $(document).delegate('#post', 'submit', function(event) {
+    	event.preventDefault();
+
+    	var channel = $('#post .channel').val();
+    	var message = $('#post .message').val();
+
+    	$('#post .channel, #post.message').val('');
+
+    	if (message.length) {
+    		window.pushIt.publish({
+    			channel: channel,
     			message: message
-    		}); 
-  		}else{
-  		  alert("type something for a message before you send!");
-  		}
+    		});
+    	} else {
+    		alert("type something for a message before you send!");
+    	}
 
-  		return false;
-  	});
-	
-
+    	return false;
+    });
 	</script>
 </head>
 <body>
