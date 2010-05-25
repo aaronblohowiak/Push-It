@@ -78,7 +78,8 @@
 		messagesRecieved: function(messages) {
 			for (var i = 0; i < messages.length; i++) {
 			  //override this with your own handler!
-				window.console.log("message: " + messages[i]);
+			  if(this.messagesReceived) this.messageReceived(messages[i]);
+			  else console.log("you must define a messagesReceived function!")
 			}
 		},
 
