@@ -35,18 +35,22 @@ Who: [Aaron Blohowiak](mailto:aaron.blohowiak@gmail.com)
 ### Example
 
 Client:
-
-    function messageReceived(channel, data, timestamp){
-       /* update UI */
-    }
     
     var channels = ["stories/5", "calendar"];
-    pushIt = PushIt(channels, messageReceived);
+    pushIt = PushIt({prefix: '/push-it/', channels: channels});
+    
+    //set up message handler
+    pushIt.messageReceived = function(message){
+       /* 
+          update UI 
+          message has the properties: channel, timestamp and data
+       */
+    };
     
     //unsubscribe
     pushIt.ignore("messages");
     
-    //subscribe at runtime
+    //subscribe to additional channels at runtime
     pushIt.subscribe("calendar/2");
     
     

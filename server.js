@@ -1,11 +1,14 @@
 HOST = null; // localhost
 PORT = 8001; //run it as root :-)
 TIMEOUT = 30 * 1000; // 30 second timeout for open connections
-FIREHOSE_SECRET_CHANNEL = "__firehose";
 CHANNEL_CACHE_DURATION = 30 * 1000;
-MEGABYTE = 1048576;
+
 /* this is how many bytes are in a MB */
+MEGABYTE = 1048576;
 MAX_POST_SIZE = 0.5 * MEGABYTE; // this is a message bus, not a file server
+
+FIREHOSE_SECRET_CHANNEL = "__firehose";
+
 //system requires
 var sys = require("sys"),
 	puts = sys.puts,
@@ -14,13 +17,7 @@ var sys = require("sys"),
 	url = require("url"),
 	querystring = require("querystring"),
 	readFile = require("fs").readFile,
-	net = require("net"),
-	repl = require("repl");
-
-//connect with telnet /tmp/node-repl-sock
-net.createServer(function(socket) {
-	repl.start("node via Unix socket> ", socket);
-}).listen("/tmp/node-repl-sock");
+	net = require("net");
 
 //custom requires	
 //this requires that you have my JavaScript-datastructures project in your $NODE_PATH
@@ -153,12 +150,12 @@ Routes.missing = function(connection) {
 		if (err) connection.notFound({});
 		else connection.respond(200, data, "text/" + path.split('.').slice(-1));
 	});	
-}
+};
 
 Routes["/"] = function(connection) {
 	readFile(__dirname + '/example/debug/index.html', 'utf8', function(err, data) {
 	  if (err){
-	    sys.puts("checking for static file: "+ __dirname + '/example/debug/index.html')
+	    sys.puts("checking for static file: "+ __dirname + '/example/debug/index.html');
 	    connection.notFound({});
 	  } 
 	  else connection.respond(200, data, "text/html");
@@ -176,7 +173,7 @@ Routes["/listen"] = function(connection) {
 	if(session){
 	  session.connect(connection);
 	}else{
-	  connection.json({error: "Session Not found"}, 404)
+	  connection.json({error: "Session Not found"}, 404);
   }
 };
 
@@ -269,6 +266,18 @@ NodeSession.prototype = {
 	disconnect: function(connection) {
 		var cxnIdx = this.connections.indexOf(connection);
 		if (cxnIdx > -1) this.connections.splice(0, cxnIdx);
+	},
+	
+	subscribe: function(channel){
+	  if(this.channels.indexOf(channel) > -1)
+	    this.channels.push(channel);
+	},
+	
+	ignore: function(channel){
+	  var idx = this.channels.indexOf(channel);
+	  if(idx > -1){
+	    this.channels.splice(idx, 1);
+	  }
 	}
 };
 

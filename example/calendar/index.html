@@ -14,23 +14,6 @@
 
 <script type='text/javascript'>
   $(document).ready(function() {
-  	var pushIt = new PushIt({
-  		prefix: '/push-it',
-  		channels: ['calendar']
-  	});
-
-  	pushIt.messageRecieved = function(message) {
-  		//also available is the channel and the timestamp.
-  		var calendarEvent = message.data;
-  		updateEvent(calendarEvent);
-  	}
-
-  	function dumbPublish(evt) {
-  		pushIt.publish({
-  			channel: "calendar",
-  			message: serializeEvent(evt)
-  		});
-  	};
 
   	window.calendar = $('#calendar').fullCalendar({
   		theme: true,
@@ -46,6 +29,24 @@
   		eventResize: dumbPublish
 
   	});
+  	
+  	var pushIt = new PushIt({
+  		prefix: '/push-it',
+  		channels: ['calendar']
+  	});
+
+  	pushIt.messageReceived = function(message) {
+  		//also available is the channel and the timestamp.
+  		var calendarEvent = message.data;
+  		updateEvent(calendarEvent);
+  	}
+
+  	function dumbPublish(evt) {
+  		pushIt.publish({
+  			channel: "calendar",
+  			message: serializeEvent(evt)
+  		});
+  	};
   });
 </script>
 <style type='text/css'>
