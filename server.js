@@ -194,14 +194,13 @@ Routes["/join"] = function(connection) {
 //  announces exit to room
 //  closes connection without response
 Routes["/leave"] = function(connection) {
+  connection.json({});
+	
 	try {
 		if (connection.params && connection.params.session_id) {
 			nodeSessions.destroy(connection.params.session_id);
 		}
-	} finally {
-		connection.json({});
-		return;
-	}
+	}catch(e){}
 };
 
 Routes["/publish"] = function(connection) {
@@ -210,6 +209,19 @@ Routes["/publish"] = function(connection) {
 	channelHost.publish(channel, data);
 	connection.json({});
 };
+
+Routes["/subscribe"] = function(connection) {
+	var channel = connection.params.channel;
+	var session = nodeSessions.sessions[connection.params.session_id];
+	if(session){
+	  sys.puts(channel);
+	  session.subscribe(channel);
+	  connection.json(session.channels);
+	}else{
+	  connection.json([]);
+	}
+};
+
 
 //stores the concept of the connection between the window and the channels.
 //  handles physical connections closing and reopening
@@ -271,6 +283,8 @@ NodeSession.prototype = {
 	subscribe: function(channel){
 	  if(this.channels.indexOf(channel) > -1)
 	    this.channels.push(channel);
+	    channelHost.observe(channel, this.receiveMessage);
+			
 	},
 	
 	ignore: function(channel){

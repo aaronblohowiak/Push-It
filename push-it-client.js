@@ -83,6 +83,17 @@
 			}
 		},
 
+    subscribe: function(channel) {
+      var options = {
+				url: this.prefix + '/subscribe?' + 'session_id=' + this.session_id,
+				data: {channel: channel},
+				dataType: "json",
+				type: "POST"
+			};
+
+			$.ajax(options);
+    },
+    
 		publish: function(data, success, error) {
 			//			console.log("PUBLISHING");
 			if (!data.hasOwnProperty("channel") || !data.hasOwnProperty("message")) {

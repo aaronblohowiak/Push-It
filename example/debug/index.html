@@ -7,12 +7,11 @@
 	<title>Push-It Debug</title>
 	<meta name="author" content="Aaron Blohowiak">
 
-  <link rel="stylesheet" href="/screen.css" type="text/css" media="screen" title="no title" charset="utf-8" />
+  <link rel="stylesheet" href="screen.css" type="text/css" media="screen" title="no title" charset="utf-8" />
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js" type="text/javascript" charset="utf-8"></script>
   <script src="push-it-client.js" type="text/javascript" charset="utf-8"></script>
   
   <script src="debug.js" type="text/javascript" charset="utf-8"></script>
-  
 </head>
 <body>
   <div id="header">
@@ -26,7 +25,24 @@
       <input type="text" value="" class="channel" autocomplete="off"/><br />
       <label>Message:</label>
       <textarea class="message" autocomplete="off"></textarea>
-      <input type="submit" value="Post" />
+      <input type="submit" value="Publish" />
   </form>
+  
+  <form id="subscribe">
+    <p>
+      Subscribe to a channel.
+    </p>
+      <label>Channel:</label>
+      <input type="text" value="" class="channel" autocomplete="off"/>
+      <input type="submit" value="Subscribe" />
+  </form>
+  
+  <h2>Current Subscriptions:</h2>
+  <ul id="subscriptions">
+  </ul>
+  
+  <h2> Messages</h2>
+  <ul id="messages">
+  </ul>
 </body>
 </html>
