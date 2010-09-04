@@ -1,127 +1,131 @@
-# Push-It [Status: Pre-Alpha]
-This project is not yet ready for use, even by bleeding-edge hardcore devs ;)
-## Make your web-app Real-Time.  Comet for Ruby on Rails, Django and PHP
-Polling is terrible and uses lots of server resources.  You should be using push instead.  Make one push from your application to Push-It, and Push-It sends your data out to all the web browsers.
-### Summary:
-What: Simple push server / comet server and client  
-Why: Developing real-time web applications shouldn't be complex  
-How: Node.JS server, jQuery client  
-Where: [http://github.com/aaronblohowiak/Push-It](http://github.com/aaronblohowiak/Push-It)  
-Who: [Aaron Blohowiak](mailto:aaron.blohowiak@gmail.com)
+# Introduction
   
-## Introduction 
-### Overview
-  Push-It lets you add push notifications to your existing web app *very* easily.
-  
-  There are two parts: the server, and the client.
-  
-  The client depends on jQuery (tested with 1.4.2)
-  The server depends on Node.JS (tested with 0.1.95)
-  
-  The client "joins" the server with a list of streams that it would like to subscribe to with a POST.
-  Then, it opens a virtually persistent connection to the server. (It is actually long-polling, but that is an implementation detail, and WebSocket support will be added soon.)
-  The server starts sending your client any new data on the streams that it is subscribed to.
-  The client has a callback (messagesReceived) that gets an array of objects that have the channel name, the data and a unix timestamp.
-  
-  That's it!
-  
-  Oh yea, how do you create new event?
-  
-  Presently, anybody can add data to any channel with a simple REST call.
-  This could be browsers, it could be your app server, go nuts.
-  
-  There is not currently any concept of a "User", only a browser-window and its connection.
-  
-### Example
+Push-It gives you an API for realtime pub/sub in the browser. On the server, it gives you hooks for security and message routing.  It is fast and cross-browser compatible.
 
-Client:
+## Dependencies
+
+Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0, Redis 1.3.17 and STOMP 1.0. Redis and STOMP are optional.
+
+# Overall Design
+  The design takes the best of [bayeux](http://svn.cometd.com/trunk/bayeux/bayeux.html), layers it on top of [socket.io](http://socket.io/) and provides you a simple and clear way to define security for your application.
+  
+  With callbacks, you can easily customize the system to provide security and message-routing functionality.
+  
+  The system is designed with scaling in mind, so you will be able to run multiple Push-It servers without worrying about sticky sessions once Socket.IO supports pluggable persistence.  Please email aaron.blohowiak@gmail.com if this is something you require.
+  
+## Security
+  You should override this: The default behavior of the system is to be completely open and echo all messages published to all subscribers on a per-channel basis.
+  
+  You define security at the point of connection, subscription and publication of messages.  The semantics are all asynchronous so you can call out from Node to other services to perform your security checking if you'd like.  For instance, you could check credentials with facebook connect, LDAP or a custom REST api. Each of these handlers has a timeout.  If your handler takes longer than its timeout, then the system will perform the least-permissive action (disconnecting a client, denying a subscription request or denying a publication.)
+
+## Server and Client
+  Push-It has the server that you run with node.js (or include in your existing node.js project,) and the client that you include in your web page.
+
+# Client
+      var channels = ["stories/5", "calendar"];
+      var credentials = document.cookie; 
+      pushIt = new PushIt({prefix: '/push-it/', channels: channels, credentials: credentials});
+
+      var msgId = pushIt.publish(channel, data, onSuccess, onError);
+
+      //set up message handler
+      pushIt.onMessageReceived = function(channel, message){
+         /* 
+            update UI 
+            message has the properties: uuid, channel, and payload
+         */
+      };
+
+      //unsubscribe
+      pushIt.unsubscribe("messages");
+
+      //subscribe to additional channels at runtime
+      pushIt.subscribe("calendar/2");
+  
+# Server 
+## Workflow
+1. An agent connects
+
+      PushIt.onConnectionRequest = function(agent){}
+  
+    1. check the agent.credentials however you see fit.
+    2. if they are valid, call agent.connected()
+    3. if they are invalid or you have an error, call agent.connectionDenied(reason)
+    4. if you do not call disconnect or connected, they will be automatically disconnected after pushIt.TIMEOUTS.onConnectionRequest seconds
+
+2. An agent subscribes to channels
+
+  The system will use the channel-specific function if the channel and function exist and will fall back to the default otherwise.
     
-    var channels = ["stories/5", "calendar"];
-    pushIt = PushIt({prefix: '/push-it/', channels: channels});
-    
-    //set up message handler
-    pushIt.messageReceived = function(message){
-       /* 
-          update UI 
-          message has the properties: channel, timestamp and data
-       */
-    };
-    
-    //unsubscribe
-    pushIt.ignore("messages");
-    
-    //subscribe to additional channels at runtime
-    pushIt.subscribe("calendar/2");
-    
-    
-App Server:
-    
-    #publish comment updates to 
-    class CommentObserver < ActiveRecord::Observer
-      def after_create(comment)
-        PushIt.publish!(
-          :channels => publish_channels(comment),
-          :payload => comment.to_json
-        )
-      end
-      
-      def on_update(comment)
-        PushIt.publish!(
-          :channels => publish_channels(comment),
-          :payload => comment.to_json
-        )
-      end
-      
-      def publish_channels(comment)
-        #notify anyone viewing this resource's parent
-        channels = ["stories/#{story_id}"]
-      
-        #add to most recent comment feed
-        channels << "comments/latest"
-        
-        #add to author's comment feed
-        channels << "/users/#{comment.user.id}/comments"
-      end
-    end
+        PushIt.onSubscriptionRequest = function(channel, agent){}
+        channel.onSubscriptionRequest = function(channel, agent){}
 
-        
-## Justification
-### Let's review the evolution of browser-server interaction
-
-1. Traditional web development revolves around the [request-response]("http://en.wikipedia.org/wiki/Request-response") model: the client (browser) makes a request to the server, waits for a response, the server sends the resource, the connection closes and the browser renders the page.  
-  >When you load a web page in-browser, you watch the spinner and wait for your lovely page to appear.  While you're waiting, there's usually nothing you can do.
+    1. check agent.credentials however you see fit
+    2. if the agent is allowed to receive on this channel, call agent.subscribe(channel)
+    3. if the agent is not allowed to receive on this channel,  call agent.subscriptionDenied(channel, reason)
+    4. if you do not call subscribe or subscriptionDenied, they will be automatically disconnected after pushIt.TIMEOUTS.onSubscriptionRequest seconds
+    
+3. An agent publishes to channels
   
-        <form action="/new">
+  The system will use the channel-specific function if the channel and function exist and will fall back to the default otherwise.
+    
+        PushIt.onPublicationRequest = function(channel, agent, message){}
+        channel.onPublicationRequest = function(channel, agent, message){}
 
-2. With [AJAX]("http://en.wikipedia.org/wiki/Ajax_(programming)") we have the traditional request-response, but then we add in more requests *after the page has loaded* that will update the page in response to a user action.  
-  >When you vote on reddit, hn or whatnot, your vote is saved without reloading the page.
-
-
-        $.post('/new');
-      
-3. With frequent [polling]("http://en.wikipedia.org/wiki/Polling_(computer_science)"), we make ajax requests at set intervals and update the page with any new content or changes.  
-  >This stinks because of the lag between polls and the strain that each connection puts on the server
+      1. check agent.credentials however you see fit
+      2. if the agent is allowed to publish on this channel, call channel.publish(message).  You may publish the message to as many channels as you'd like.
+      3. call agent.publicationSuccess(message)
+      4. if the agent is not allowed to publish on this channel,  call agent.publicationDenied(message, reason)
+      5. if you do not call agent.publicationDenied or agent.publicationSuccess, then a publicationDenied will be automatically sent  after pushIt.TIMEOUTS.onPublicationRequest seconds
   
-
-        var since = 0; 
-        function UpdateSince(){ since = (new Date).getTime(); };
-        function Poll(){ $.get('/check?since='+since, ProcessResults); };
-        function ProcessResults(data){ UpdateSince(); UpdatePage(data); };
-        setTimeout(Poll, delay);
+4. An message is sent to a channel where an agent has a subscription.
   
-4. With [Comet / BOSH / LongPolling]("http://en.wikipedia.org/wiki/Comet_(programming"), we make a regular AJAX request, but the server waits until it has data to send before replying to the request.  The browser initiates another request immediately upon response.  
-  >New facebook chat messages just "show up" right in your browser, without having to click anything.. your browser just uses one connection at a time.
+        Agent.onMessageReceived = function(channel, agent, message){}
   
+  1. check agent.credentials however you see fit
+  2. if the agent is allowed to receive this message, call agent.deliver(channel, message)
 
-        var since = 0; 
-        function UpdateSince(){ since = (new Date).getTime(); };
-        function LongPoll(){ $.get('/check?since='+since, ProcessResults); };
-        function ProcessResults(data){ 
-          UpdateSince(data); 
-          UpdatePage(data); 
-          LongPoll();
-        };
+  NOTE: this callback is unlike the others.  there is no timeout or failure condition.  you can silently drop messages and nobody will be informed.  This is useful if you want to perform some JIT transformation of messages before delivery to agents.
+  
+5. An agent unsubscribes to channels
 
-## Implementation
+  This is the same as subscription, except with the names changed to Unsubscribe and Unsubscription.
+  
+6. An agent disconnects
 
-The browser makes an AJAX request and the server returns immediately with any updates, just like polling.  *However*, if the server _doesn't_ have any updates, things get funky.  Instead of responding immediately, the server takes waits before getting back to the client.  The server can wait up to around 240 seconds to have something to send to the browser as the response for the request.  When the server has data to return, it responds with the data.  To the AJAX client, it just seems like a request that took a really long time. Because we don't know how long the request-response cycle is going to take, we fire off the next poll in the response handler.  Because we make a new request as soon as we get a response it seems like the client is maintaining an open connection to the server, as it almost always has one open, ready and waiting.
+  PushIt.onDisconnection(agent)
+  
+  This is provided for your convenience and completeness.
+
+## Push-It  objects are:
+
+  * PushIt
+    
+  * Agent (things that wish to be notified, and may stand in for other things of the same ilk)
+    * uuid
+    * connection
+    * credentials (application-defined)
+  * Message (stuff to be routed)
+    * uuid
+    * channel (uuid)
+    * payload (application-defined)
+  * Channel (a namespace for message distribution)
+    * uuid
+    * name
+    * guards:
+      * beforeJoin
+      * onMessage
+  * Subscription (the connection between an agent and a channel)
+    * uuid
+    * channel (uuid)
+    * agent (uuid)
+
+# Scaling Push-It
+
+### Push-It has persistence and message-bus needs.  
+
+The underlying browser-server connection is provided by Socket.IO, which does not currently scale. Enabling multi-node installs will requiring hacking socket.io's transports to use a shared-memory store (redis/mongo/etc) for its data.  If you'd like to support this, please contact aaron.blohowiak@gmail.com
+
+For persistence, Push-It has a pluggable asynchronous data storage layer.  This will let you store your data in-process, with redis, or you can write your own adapter.
+
+For messaging, Push-It has a pluggable message bus layer.  This will let you pump messages in-process or with an external broker so you can scale.  Currently, Push-It supports in-process, redis and stomp.  I'd like to implement 0mq as well.  Existing message queues can scale to millions of messages a second, so Push-It is ready to scale when Socket.IO can operate in a shared-nothing way.
