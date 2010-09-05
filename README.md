@@ -93,7 +93,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
   
 ###6. An agent disconnects
 
-  PushIt.onDisconnection(agent)
+    PushIt.onDisconnection(agent)
   
   This is provided for your convenience and completeness.
 
