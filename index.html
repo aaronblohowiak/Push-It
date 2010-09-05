@@ -10,8 +10,8 @@
 	<style type="text/css">
 		body {
   		margin-top: 1.0em;
-  		background-color: #dbf5db;
-		  font-family: "Helvetica,Arial,FreeSans";
+  		background-color: #fdfdfd;
+		  font-family: Helvetica,Arial,FreeSans;
   		color: #000000;
     }
     #container {
@@ -24,6 +24,11 @@
 		h2 { font-size: 1.5em; color: #240a24; }
     h3 { text-align: center; color: #240a24; }
     a { color: #240a24; }
+    a:link{ color: #ff3300;}
+    a:visited{ color: #ff3300;}
+    a:hover{ color: #660000;}
+    
+    
     .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
     .download { float: right; }
 		pre { background: #000; color: #fff; padding: 15px;}
@@ -49,24 +54,29 @@
       <span class="small">by <a href="http://github.com/aaronblohowiak">aaronblohowiak</a></span></h1>
 
     <div class="description">
-      Push-It gives you an API for realtime pub/sub in the browser. On the server, it gives you hooks for security and message routing.  It is fast and cross-browser compatible.
+      Push-It gives you an API for realtime pub/sub in the browser. <br/>
+      On the server, it gives you hooks for security and message routing.  <br/>
+      <b>It is fast and cross-browser compatible.</b>
 
     </div>
 
-    <p>The design takes the best of [bayeux](http://svn.cometd.com/trunk/bayeux/bayeux.html), layers it on top of [socket.io](http://socket.io/) and provides you a simple and clear way to define security for your application.
+    <p>The design takes the best of <a href="http://svn.cometd.com/trunk/bayeux/bayeux.html" title="The Bayeux Protocol">bayeux</a>, layers it on top of <a href="http://socket.io/" title="Socket.IO">socket.io</a> and provides you a simple and clear way to define security for your application.</p>
+
+  <p>With callbacks, you can easily customize the system to provide security and message-routing functionality.</p>
   
-  With callbacks, you can easily customize the system to provide security and message-routing functionality.
-  
-  The system is designed with scaling in mind, so you will be able to run multiple Push-It servers without worrying about sticky sessions once Socket.IO supports pluggable persistence.  Please email aaron.blohowiak@gmail.com if this is something you require.
+  <p>The system is designed with scaling in mind, so you will be able to run multiple Push-It servers without worrying about sticky sessions once Socket.IO supports pluggable persistence.  Please email <a href="mailto:&#x61;&#x61;&#x72;&#x6F;&#x6E;&#x2E;&#x62;&#x6C;&#x6F;&#x68;&#x6F;&#x77;&#x69;&#x61;&#x6B;&#x40;&#x67;&#x6D;&#x61;&#x69;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;">aaron.blohowiak@gmail.com</a> if this is something you require.</p>
   </p><h2>Dependencies</h2>
-<p>Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0, Redis 1.3.17 and STOMP 1.0. Redis and STOMP are optional.
+<p>Self-contained on the client.  On the server, Push-It is tested with <a href="http://nodejs.org/">Node.JS 0.2.0</a>, <a href="http://code.google.com/p/redis/">Redis</a> 1.3.17 and <a href="http://stomp.codehaus.org/" title="Stomp - Home">STOMP</a> 1.0. Redis and STOMP are optional.
 </p>
 <h2>License</h2>
-<p>MIT</p>
+<p><a href="http://en.wikipedia.org/wiki/MIT_License" title="MIT License - Wikipedia, the free encyclopedia">MIT</a></p>
 <h2>Authors</h2>
-<p>Aaron Blohowiak (aaron.blohowiak@gmail.com)<br/><br/>      </p>
+<p>Aaron Blohowiak (<a href="mailto:&#x61;&#x61;&#x72;&#x6F;&#x6E;&#x2E;&#x62;&#x6C;&#x6F;&#x68;&#x6F;&#x77;&#x69;&#x61;&#x6B;&#x40;&#x67;&#x6D;&#x61;&#x69;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;" title="Aaron Blohowiak">aaron.blohowiak@gmail.com</a>)
+<br/>
+<br/>      </p>
 <h2>Contact</h2>
-<p>Aaron Blohowiak (aaron.blohowiak@gmail.com)<br/>      </p>
+<p>Aaron Blohowiak (<a href="mailto:&#x61;&#x61;&#x72;&#x6F;&#x6E;&#x2E;&#x62;&#x6C;&#x6F;&#x68;&#x6F;&#x77;&#x69;&#x61;&#x6B;&#x40;&#x67;&#x6D;&#x61;&#x69;&#x6C;&#x2E;&#x63;&#x6F;&#x6D;" title="Aaron Blohowiak">aaron.blohowiak@gmail.com</a>)
+<br/>      </p>
 
 
     <h2>Download</h2>
