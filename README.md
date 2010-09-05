@@ -44,41 +44,41 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
   
 # Server 
 ## Workflow
-1. An agent connects
+###1. An agent connects
 
       PushIt.onConnectionRequest = function(agent){}
   
-    1. check the agent.credentials however you see fit.
-    2. if they are valid, call agent.connected()
-    3. if they are invalid or you have an error, call agent.connectionDenied(reason)
-    4. if you do not call disconnect or connected, they will be automatically disconnected after pushIt.TIMEOUTS.onConnectionRequest seconds
+  1. check the agent.credentials however you see fit.
+  2. if they are valid, call agent.connected()
+  3. if they are invalid or you have an error, call agent.connectionDenied(reason)
+  4. if you do not call disconnect or connected, they will be automatically disconnected after pushIt.TIMEOUTS.onConnectionRequest seconds
 
-2. An agent subscribes to channels
+###2. An agent subscribes to channels
 
   The system will use the channel-specific function if the channel and function exist and will fall back to the default otherwise.
     
         PushIt.onSubscriptionRequest = function(channel, agent){}
         channel.onSubscriptionRequest = function(channel, agent){}
 
-    1. check agent.credentials however you see fit
-    2. if the agent is allowed to receive on this channel, call agent.subscribe(channel)
-    3. if the agent is not allowed to receive on this channel,  call agent.subscriptionDenied(channel, reason)
-    4. if you do not call subscribe or subscriptionDenied, they will be automatically disconnected after pushIt.TIMEOUTS.onSubscriptionRequest seconds
+  1. check agent.credentials however you see fit
+  2. if the agent is allowed to receive on this channel, call agent.subscribe(channel)
+  3. if the agent is not allowed to receive on this channel,  call agent.subscriptionDenied(channel, reason)
+  4. if you do not call subscribe or subscriptionDenied, they will be automatically disconnected after pushIt.TIMEOUTS.onSubscriptionRequest seconds
     
-3. An agent publishes to channels
+###3. An agent publishes to channels
   
   The system will use the channel-specific function if the channel and function exist and will fall back to the default otherwise.
     
         PushIt.onPublicationRequest = function(channel, agent, message){}
         channel.onPublicationRequest = function(channel, agent, message){}
 
-      1. check agent.credentials however you see fit
-      2. if the agent is allowed to publish on this channel, call channel.publish(message).  You may publish the message to as many channels as you'd like.
-      3. call agent.publicationSuccess(message)
-      4. if the agent is not allowed to publish on this channel,  call agent.publicationDenied(message, reason)
-      5. if you do not call agent.publicationDenied or agent.publicationSuccess, then a publicationDenied will be automatically sent  after pushIt.TIMEOUTS.onPublicationRequest seconds
+  1. check agent.credentials however you see fit
+  2. if the agent is allowed to publish on this channel, call channel.publish(message).  You may publish the message to as many channels as you'd like.
+  3. call agent.publicationSuccess(message)
+  4. if the agent is not allowed to publish on this channel,  call agent.publicationDenied(message, reason)
+  5. if you do not call agent.publicationDenied or agent.publicationSuccess, then a publicationDenied will be automatically sent  after pushIt.TIMEOUTS.onPublicationRequest seconds
   
-4. An message is sent to a channel where an agent has a subscription.
+###4. An message is sent to a channel where an agent has a subscription.
   
         Agent.onMessageReceived = function(channel, agent, message){}
   
@@ -87,11 +87,11 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
 
   NOTE: this callback is unlike the others.  there is no timeout or failure condition.  you can silently drop messages and nobody will be informed.  This is useful if you want to perform some JIT transformation of messages before delivery to agents.
   
-5. An agent unsubscribes to channels
+###5. An agent unsubscribes to channels
 
   This is the same as subscription, except with the names changed to Unsubscribe and Unsubscription.
   
-6. An agent disconnects
+###6. An agent disconnects
 
   PushIt.onDisconnection(agent)
   
