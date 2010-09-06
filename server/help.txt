@@ -1,0 +1,17 @@
+Pre-Requisites
+-------------------
+  You must use a distribution OR ensure that you have all submodules initialized and updated if you are using Push-It from a checkout.
+  
+     git submodules init
+     git submodules update --recursive
+     
+  You must serve the Push-It assets, and include the push-it client in your web page at the location in options.staticAssetDirectory.  If you specify the staticAssetDirectory as /static/client and your application is at http://example.com, then you must serve the Push-It client at http://example.com/static/client/push-it-client.js
+  
+  You must start the process as root if you want flash sockets to work, as the large red warning box from Socket.IO is likely warning you (if you haven't already.)
+  
+  
+Mounting Push-It
+--------------------
+
+  By default, Push-It will mount itself to '/push-it/', intercepting all requests for http://example.com/push-it/ If you'd like to change this endpoint, you may do so by setting the mountPount option.
+  

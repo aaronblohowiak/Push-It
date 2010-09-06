@@ -26,7 +26,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
       var credentials = document.cookie; 
       pushIt = new PushIt({prefix: '/push-it/', channels: channels, credentials: credentials});
 
-      var msgId = pushIt.publish(channel, data, onSuccess, onError);
+      var msgId = pushIt.publish(channel, data, onError, onSuccess);
 
       //set up message handler
       pushIt.onMessageReceived = function(channel, message){
@@ -40,7 +40,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
       pushIt.unsubscribe("messages");
 
       //subscribe to additional channels at runtime
-      pushIt.subscribe("calendar/2");
+      pushIt.subscribe("calendar/2", onError, onSuccess);
   
 # Server 
 ## Workflow
@@ -74,7 +74,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
 
   1. check agent.credentials however you see fit
   2. if the agent is allowed to publish on this channel, call channel.publish(message).  You may publish the message to as many channels as you'd like.
-  3. call agent.publicationSuccess(message)
+  3. call agent.publicationSuccess(message) if you have published the message (or dealt with it in some other way, like posting it to a rest service or logging it or whatever else you'd like,) 
   4. if the agent is not allowed to publish on this channel,  call agent.publicationDenied(message, reason)
   5. if you do not call agent.publicationDenied or agent.publicationSuccess, then a publicationDenied will be automatically sent  after pushIt.TIMEOUTS.onPublicationRequest seconds
   

@@ -20,7 +20,8 @@ var io = require(__dirname+'/../../server/lib/socket.io');
     	url = require("url"),
     	querystring = require("querystring"),
     	readFile = require("fs").readFile,
-    	net = require("net");
+    	net = require("net"),
+    	connect = require('connect');
 
     //our main http connection handler
     function cxn(request, response) {
@@ -32,7 +33,7 @@ var io = require(__dirname+'/../../server/lib/socket.io');
     	}
     }
 
-    server = createServer(cxn);
+    server = connect.createServer(cxn);
     server.listen(PORT, HOST);
     sys.puts("Server at http://" + (HOST || "127.0.0.1") + ":" + PORT + "/");
 

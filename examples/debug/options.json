@@ -1,4 +1,6 @@
 {
   "port": 8081,
-  "client_directory": "./static/client"
+  "staticAssetDirectory": "/static/client",
+  "mountPoint":"/push-it",
+  "nohelp": true
 }

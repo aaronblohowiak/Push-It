@@ -1,18 +1,25 @@
 var PushIt = require (__dirname + '/../../server/push-it').PushIt,
-    fs = require('fs');
+    fs = require('fs'),
+    connect = require('connect');
 
-/* this gets passed through to http.createServer */
-var connectionHandler = function(req, res){
-  
-  
-};
+ try{
+   var options = JSON.parse(fs.readFileSync(__dirname+"/options.json"))  
+ }catch(e){
+   console.error("Could not load the options file!: ", e.toString());
+   process.exit()
+ }
+ 
 
-try{
-  var options = JSON.parse(fs.readFileSync(__dirname+"/options.json"))  
-}catch(e){
-  console.error("Could not load the options file!");
-  console.error(e.toString());
-  process.exit()
+function helloWorld(req, res) {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('hello world');
 }
 
-var pi = new PushIt(connectionHandler, options);
+
+var server = connect.createServer( 
+  connect.staticProvider(__dirname + '/static')
+);
+
+server.listen(8001);
+
+var pi = new PushIt(server, options);
