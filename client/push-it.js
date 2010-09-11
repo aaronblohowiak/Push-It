@@ -4,7 +4,7 @@
 		var self = this;
 		this.last_message_timestamp = 0; //get from server.
 		this.messageCallbacks = {};
-		this.agentId = this.uuid(22, 64);
+		this.agentId = this.UUID(22, 64);
 
 		this.channels = [window.location.href];
 		if (options.channels) {
@@ -30,7 +30,9 @@
       socket = new io.Socket('localhost');
       this.socket = socket;
       socket.connect();
+      
       this.sendMessage(joinRequest);
+      
       socket.addEvent('message', function(data){
           self.onMessageReceived(data);
       });
@@ -96,31 +98,12 @@
 
       var chars = BASE64CHARS, uuid = [], i=0;
       radix = radix || chars.length;
+      len = len || 22;
 
-      if (len) {
-        // Compact form
-        for (i = 0; i < len; i++) uuid[i] = chars[0 | Math.random()*radix];
-      } else {
-        // rfc4122, version 4 form
-        var r;
-
-        // rfc4122 requires these characters
-        uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
-        uuid[14] = '4';
-
-        // Fill in random data.  At i==19 set the high bits of clock sequence as
-        // per rfc4122, sec. 4.1.5
-        for (i = 0; i < 36; i++) {
-          if (!uuid[i]) {
-            r = 0 | Math.random()*16;
-            uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
-          }
-        }
-      }
+      for (i = 0; i < len; i++) uuid[i] = chars[0 | Math.random()*radix];
 
       return uuid.join('');
     }
-    
 	};
 
 	global.PushIt = PushIt;
