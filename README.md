@@ -31,7 +31,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
       //set up message handler
       pushIt.onMessageReceived = function(channel, message){
          /* 
-            update UI 
+            update UI
             message has the properties: uuid, channel, and payload
          */
       };
@@ -51,7 +51,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
   1. check the agent.credentials however you see fit.
   2. if they are valid, call agent.connected()
   3. if they are invalid or you have an error, call agent.connectionDenied(reason)
-  4. if you do not call disconnect or connected, they will be automatically disconnected after pushIt.TIMEOUTS.onConnectionRequest seconds
+  4. if you do not call disconnect or connected, they will be denied after pushIt.TIMEOUTS.onConnectionRequest seconds
 
 ###2. An agent subscribes to channels
 
@@ -97,24 +97,29 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
   
   This is provided for your convenience and completeness.
 
-## Push-It  objects are:
+## Push-It Objects:
 
+### Define in your code
   * PushIt
-    
+    * options
+    * channels
+
+  * Channel (a namespace for message distribution)
+    * name
+    * guards:
+      * beforeJoin
+      * onMessage
+
+### created / destroyed at runtime
   * Agent (things that wish to be notified, and may stand in for other things of the same ilk)
     * uuid
+    * isConnected
     * connection
     * credentials (application-defined)
   * Message (stuff to be routed)
     * uuid
     * channel (uuid)
     * payload (application-defined)
-  * Channel (a namespace for message distribution)
-    * uuid
-    * name
-    * guards:
-      * beforeJoin
-      * onMessage
   * Subscription (the connection between an agent and a channel)
     * uuid
     * channel (uuid)
