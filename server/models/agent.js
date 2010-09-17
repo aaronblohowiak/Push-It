@@ -1,14 +1,26 @@
-var rapid = require('rapid'),
-    inspect = require('sys').inspect;
+var inspect = require('sys').inspect;
 
+//TODO: implement save / pluggable persistence layers
 
-var Agent = rapid.model('Agent', {
-    id : {type: 'string'},
-    credentials : { type: 'string', required: true },
-    isConnected : { type: 'bool' } 
-});
+var agents = {};
 
-var agent = rapid.Model.models["Agent"];
+function Agent(obj){
+    if(!(this instanceof Agent)) return new Agent(obj);
+    
+    this.id = obj.id;
+    agents[obj.id] = this; // auto-save. TODO: garbage collect
+    this.credentials = obj.credentials;
+    this.isConnected = obj.isConnected;
+    
+};
+
+var agent = Agent;
+
+agent.agents = agents;
+
+agent.get = function(id, callback){
+  callback(null, agents[id]);
+};
 
 agent.prototype.send = function(msg){
   this.client.send(msg); //for now.
@@ -17,9 +29,6 @@ agent.prototype.send = function(msg){
 agent.prototype.connected = function(){
   clearTimeout(this.authenticationTimeout);
   this.isConnected = true;
-  this.save(function(err, success){
-    if(err) console.log("error connecting", err);
-  });
   
   this.send({
     "channel":"/meta/connect",
