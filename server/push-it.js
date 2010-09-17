@@ -3,14 +3,13 @@ require.paths.unshift(__dirname+"/models/");
 require.paths.unshift(__dirname+"/mqs/");
 
 var socketIo = require(__dirname+'/lib/socket.io'),
-    http = require('http'),
     uuid = require('uuid').uuid,
     help = require('help').help,
     inspect = require("sys").inspect,
     Agent = require("agent"),
     Channel = require("channel"),
     InMemoryMQ = require("in_memory"),
-    proto = require(__dirname+'/lib/push-it-proto'),
+    proto = require(__dirname+'/etc/push-it-proto'),
     SubscriptionManager = require("subscription_manager");
 
 //TODO: real options parsing
