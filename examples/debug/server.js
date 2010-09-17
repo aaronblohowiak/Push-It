@@ -24,5 +24,9 @@ server.listen(8001);
 
 var pi = new PushIt(server, options);
 
+pi.onConnectionRequest = function(agent){
+  console.log(agent.client.request.headers.origin);
+  agent.connected();
+}
 
 
