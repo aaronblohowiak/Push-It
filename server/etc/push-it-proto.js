@@ -145,8 +145,9 @@ proto.__onPublicationRequest = function (client, message){
      }
      
      var chan = message.channel;
-     agent.client = client;
      var channel = self.channel(chan);
+
+     agent.client = client;
      
      agent.requirePublication(self.TIMEOUTS.onPublicationRquest, message, channel);
      
