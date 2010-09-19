@@ -42,7 +42,29 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
       //subscribe to additional channels at runtime
       pushIt.subscribe("calendar/2", onError, onSuccess);
   
-# Server 
+# Server
+      //create your default server, raw http, connect or express
+      var server = connect.createServer( 
+        connect.staticProvider(__dirname + '/static')
+      );
+
+      //open your port
+      server.listen(8001);
+
+
+      //read the optional options file. sync is usually avoided, but fine for server statup
+      var options = JSON.parse(fs.readFileSync(__dirname+"/options.json"))  
+
+      //create the PushIt instance      
+      var pi = new PushIt(server, options);
+
+      //customize security gates. default is to permit all actions.
+      pi.onConnectionRequest = function(agent){
+        if(agent.credentials == "it's meeee!")
+          agent.connected();
+      }
+  
+  
 ## Workflow
 ###1. An agent connects
 
