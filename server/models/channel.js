@@ -1,6 +1,7 @@
 var Channel = function(name, pushIt, onSubscriptionRequest, onPublicationRequest){
   this.name = name;
   this.pushIt = pushIt;
+  pushIt.channels[name] = this;
   this.onPublicationRequest = onPublicationRequest;
   this.onSubscriptionRequest = onSubscriptionRequest; 
 }

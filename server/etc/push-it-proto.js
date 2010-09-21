@@ -151,7 +151,7 @@ proto.__onPublicationRequest = function (client, message){
      
      agent.requirePublication(self.TIMEOUTS.onPublicationRquest, message, channel);
      
-     if(channel.onSubscriptionRequest){
+     if(channel.onPublicationRquest){
        channel.onPublicationRquest(channel, agent, message);
      }else{
        self.onPublicationRquest(channel, agent, message);

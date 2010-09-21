@@ -139,6 +139,24 @@ test["custom filter should prevent subscription"] = function(assert){
 };
 
 
+test["custom channel filter should prevent subscription"] = function(assert){
+  var pi = new PushIt;
+  var client = new TestClient();
+  var subMsg =  subscriptionRequestMessage();
+
+  channel = pi.channel(subMsg.data.channel);
+
+  channel.onSubscriptionRequest = function(channel, agent){
+    agent.subscriptionDenied(channel, "you stink!");
+  };
+
+  pi.__onMessage(client, connectionRequestMessage());
+  pi.__onMessage(client, subMsg);
+  var lm = client.lastMessage();
+  assert.equal(lm.channel, "/meta/subscribe");
+  assert.equal(lm.successful, false);
+};
+
 test["require a channel to have a subscription"] = function(assert){
   var pi = new PushIt;
   var client = new TestClient();
@@ -171,6 +189,34 @@ test["custom filter that does nothing should prevent subscription"] = function(a
   setTimeout(function(){
     var lm = client.lastMessage();
     assert.equal(lm.channel, "/meta/subscribe");
+    assert.equal(lm.successful, false);
+    n++;
+  }, 100);
+  
+  beforeExit(function(){
+    assert.equal(n, 1);
+  });
+};
+
+
+
+test["custom filter that does nothing should prevent publication"] = function(assert, beforeExit){
+  var pi = new PushIt;
+  var client = new TestClient();
+  var pubMsg = publicationRequestMessage();
+  var n = 0;
+  
+  pi = shortenTimeouts(pi);
+  
+  pi.onPublicationRquest = function(channel, agent){
+  };
+
+  pi.__onMessage(client, connectionRequestMessage());
+  pi.__onMessage(client, pubMsg);
+
+  setTimeout(function(){
+    var lm = client.lastMessage();
+    assert.equal(lm.channel, pubMsg.channel);
     assert.equal(lm.successful, false);
     n++;
   }, 100);

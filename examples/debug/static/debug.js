@@ -28,7 +28,7 @@ $(function() {
 		var channel = $('#subscribe .channel').val();
 		$('#subscribe .channel').val('');
 
-    console.log("channel: "+channel);
+    window.console.log("channel: "+channel);
 		if (channel.length) {
 			window.pushIt.subscribe(channel);
 		}
@@ -42,7 +42,7 @@ $(function() {
 
 	 li.append('<span class="timestamp">'+(new Date(message.timestamp).toString())+'</span>');
 	 li.append('<pre class="data">'+message.data+'</pre>');
-	 console.log(li);
+	 window.console.log(li);
 	 $('#messages').prepend(li);
 	};
 
