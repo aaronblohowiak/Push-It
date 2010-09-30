@@ -2,7 +2,7 @@ require.paths.unshift(__dirname+"/lib/");
 require.paths.unshift(__dirname+"/models/");
 require.paths.unshift(__dirname+"/mqs/");
 
-var socketIo = require(__dirname+'/lib/socket.io'),
+var socketIo = require('socket.io'),
     uuid = require('uuid').uuid,
     help = require('help').help,
     inspect = require("sys").inspect,

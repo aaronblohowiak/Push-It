@@ -29,7 +29,10 @@ function TestAgent(){
 
 TestAgent.prototype = {
   id : "replaceme",
-  client : { }
+  client : { },
+  send: function(msg){
+    this.client.send(msg);
+  }
 }
 
 function newSMtest(){

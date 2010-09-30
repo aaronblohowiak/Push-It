@@ -99,11 +99,12 @@ proto.__subscribe = function(client, message){
      if(err){ 
        message.successful = false;
        message.error = "unknown agentId";
-       client.send(message);
+       agent.send(message);
        return;
      }
 
      var channel = self.channel(name);
+     agent.client = client;
      
      agent.requireSubscription(self.TIMEOUTS.onSubscriptionRequest, message, channel);
      
@@ -146,9 +147,7 @@ proto.__onPublicationRequest = function (client, message){
      
      var chan = message.channel;
      var channel = self.channel(chan);
-
-     agent.client = client;
-     
+          
      agent.requirePublication(self.TIMEOUTS.onPublicationRquest, message, channel);
      
      if(channel.onPublicationRquest){

@@ -31,7 +31,7 @@ proto.received = function(chan, message){
   var ss = this.subscriptions[chan];
   if(ss){
     for(var agentId in ss.agents){
-      ss.agents[agentId].client.send(message);
+      ss.agents[agentId].send(message);
     }
   }
 };

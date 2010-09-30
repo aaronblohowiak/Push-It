@@ -1,4 +1,4 @@
-var PORT = 8001;
+var PORT = 8080;
 
 var PushIt = require (__dirname + '/../../server/push-it').PushIt,
     fs = require('fs'),
