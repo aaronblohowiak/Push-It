@@ -16,8 +16,10 @@ Channel.prototype = {
     this.pushIt.subscribe( this, agent);
   },
   
-  publish: function(message){
-    this.pushIt.publish( this, message);
+  publish: function(src){
+    var msg = {};
+    Object.keys(src).forEach(function (prop) { msg[prop] = src[prop] })
+    this.pushIt.publish( this, msg);
   }
 };
 
