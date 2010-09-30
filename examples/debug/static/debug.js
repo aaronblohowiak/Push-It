@@ -36,12 +36,13 @@ $(function() {
 		return false;
 	});
 	
-	pushIt.messageReceived = function(message){
+	pushIt.onMessageReceived = function(message){
+	 console.log("aaaah", message)
 	 var li = $('<li/>');
 	 li.append('<span class="channel">'+message.channel+'</span> ');
 
 	 li.append('<span class="timestamp">'+(new Date(message.timestamp).toString())+'</span>');
-	 li.append('<pre class="data">'+message.data+'</pre>');
+	 li.append('<pre class="data">'+JSON.stringify(message)+'</pre>');
 	 window.console.log(li);
 	 $('#messages').prepend(li);
 	};
