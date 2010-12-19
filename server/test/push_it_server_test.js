@@ -2,7 +2,9 @@ var test = {},
     InMemoryMQ = require('in_memory'),
     SubscriptionManager = require('subscription_manager'),
     proto = require('push-it-proto'),
-    agent = require('agent');
+    agent = require('agent'),
+    assert = require('assert');
+    
     
 function PushIt(){
   this.mq = new InMemoryMQ();
@@ -49,7 +51,7 @@ function publicationRequestMessage(){
   return {uuid: "uuid1", channel:"pants", agentId: "agentId", data:"who framed roger rabbit?"};
 };
 
-test["connect with an invalid message sends error"] = function(assert){
+test["connect with an invalid message sends error"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
   pi.__onMessage(client, {uuid: "uuid1", channel:"/meta/connect"});
@@ -58,7 +60,7 @@ test["connect with an invalid message sends error"] = function(assert){
 
 
 
-test["connect with a valid message sends success"] = function(assert){
+test["connect with a valid message sends success"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
 
@@ -69,7 +71,7 @@ test["connect with a valid message sends success"] = function(assert){
 };
 
 
-test["custom filter should prevent connection"] = function(assert){
+test["custom filter should prevent connection"] = function(){
   var pi = new PushIt;
   
   pi.onConnectionRequest = function(agent){
@@ -85,7 +87,7 @@ test["custom filter should prevent connection"] = function(assert){
 };
 
 
-test["custom filter that does nothing should prevent connection"] = function(assert, beforeExit){
+test["custom filter that does nothing should prevent connection"] = function(beforeExit){
   var pi = new PushIt;
   var n = 0;
   
@@ -111,7 +113,7 @@ test["custom filter that does nothing should prevent connection"] = function(ass
 };
 
 
-test["subscribe with default function should return a success"] = function(assert){
+test["subscribe with default function should return a success"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
 
@@ -123,7 +125,7 @@ test["subscribe with default function should return a success"] = function(asser
 };
 
 
-test["custom filter should prevent subscription"] = function(assert){
+test["custom filter should prevent subscription"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
   
@@ -139,7 +141,7 @@ test["custom filter should prevent subscription"] = function(assert){
 };
 
 
-test["custom channel filter should prevent subscription"] = function(assert){
+test["custom channel filter should prevent subscription"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
   var subMsg =  subscriptionRequestMessage();
@@ -157,7 +159,7 @@ test["custom channel filter should prevent subscription"] = function(assert){
   assert.equal(lm.successful, false);
 };
 
-test["require a channel to have a subscription"] = function(assert){
+test["require a channel to have a subscription"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
 
@@ -172,7 +174,7 @@ test["require a channel to have a subscription"] = function(assert){
 
 
 
-test["custom filter that does nothing should prevent subscription"] = function(assert, beforeExit){
+test["custom filter that does nothing should prevent subscription"] = function( beforeExit){
   var pi = new PushIt;
   var client = new TestClient();
   
@@ -200,7 +202,7 @@ test["custom filter that does nothing should prevent subscription"] = function(a
 
 
 
-test["custom filter that does nothing should prevent publication"] = function(assert, beforeExit){
+test["custom filter that does nothing should prevent publication"] = function(beforeExit){
   var pi = new PushIt;
   var client = new TestClient();
   var pubMsg = publicationRequestMessage();
@@ -227,7 +229,7 @@ test["custom filter that does nothing should prevent publication"] = function(as
 };
 
 
-test["publishing should be successful by default"] = function(assert){
+test["publishing should be successful by default"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
 
@@ -241,7 +243,7 @@ test["publishing should be successful by default"] = function(assert){
 };
 
 
-test["publishing with deleted agent sends error"] = function(assert){
+test["publishing with deleted agent sends error"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
   var req = connectionRequestMessage(), pub = publicationRequestMessage();

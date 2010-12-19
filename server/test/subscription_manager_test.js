@@ -1,6 +1,7 @@
 var test = {},
     SM = require('subscription_manager'),
-    MQ = require('in_memory');
+    MQ = require('in_memory'),
+    assert = require('assert');
 
 function propertyCount(obj){
   var key = "";
@@ -50,7 +51,7 @@ function newSMtest(){
 
 
 
-test['first subscription creates mq subscription'] = function(assert){
+test['first subscription creates mq subscription'] = function(){
     var t = new newSMtest();
     var sm = t.sm, agent = t.agent, agent2 = t.agent2;
     var before_length = t.mqSubscriptions();
@@ -60,7 +61,7 @@ test['first subscription creates mq subscription'] = function(assert){
 };
 
 
-test['additional subscription on same channel does not create an additional mq subscription'] = function(assert){
+test['additional subscription on same channel does not create an additional mq subscription'] = function(){
     var t = new newSMtest();
     var sm = t.sm, agent = t.agent, agent2 = t.agent2;
 
@@ -71,7 +72,7 @@ test['additional subscription on same channel does not create an additional mq s
     assert.equal(t.mqSubscriptions(), before_length);
 };
 
-test['a message sent to a channel should be sent to the subscribed agent.'] = function(assert, beforeExit){
+test['a message sent to a channel should be sent to the subscribed agent.'] = function(beforeExit){
     var t = new newSMtest();
     var sm = t.sm, agent = t.agent, agent2 = t.agent2, n=0;
     
@@ -88,7 +89,7 @@ test['a message sent to a channel should be sent to the subscribed agent.'] = fu
     })
 };
 
-test['a message sent to a channel should NOT be sent to the unsubscribed agent.'] = function(assert, beforeExit){
+test['a message sent to a channel should NOT be sent to the unsubscribed agent.'] = function(beforeExit){
     var t = new newSMtest();
     var sm = t.sm, agent = t.agent, agent2 = t.agent2, n=0;
     
@@ -108,7 +109,7 @@ test['a message sent to a channel should NOT be sent to the unsubscribed agent.'
 };
 
 
-test['unsubscribing the only agent should discontinue subscription'] = function(assert){
+test['unsubscribing the only agent should discontinue subscription'] = function(){
   var t = new newSMtest();
   var sm = t.sm, agent = t.agent, agent2 = t.agent2;
 
@@ -119,7 +120,7 @@ test['unsubscribing the only agent should discontinue subscription'] = function(
   assert.equal(t.mqSubscriptions(), 0);
 };
 
-test['unsubscribing a 1 + n agent should not discontinue mq subscription'] = function(assert){
+test['unsubscribing a 1 + n agent should not discontinue mq subscription'] = function(){
   var t = new newSMtest();
   var sm = t.sm, agent = t.agent, agent2 = t.agent2;
 
