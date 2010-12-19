@@ -1,0 +1,20 @@
+{
+    "name": "push-it",
+    "author": "Aaron Blohowiak <aaron.blohowiak@gmail.com>",
+    "description": "Pub/Sub for the browser",
+    "keywords": ["push", "pub/sub", "socket.io"],
+    "version": "0.0.0r0",
+    "homepage": "http://github.com/aaronblohowiak/Push-It",
+    "repository" : { 
+      "type" : "git",
+      "url" : "git://github.com/aaronblohowiak/Push-It"
+    },
+    
+    "dependencies": {
+      "socket.io":"0.5.3",
+    },
+
+    "main": "./server/push-it.js"
+    
+}
+

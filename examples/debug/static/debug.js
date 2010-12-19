@@ -41,7 +41,7 @@ $(function() {
 	 var li = $('<li/>');
 	 li.append('<span class="channel">'+message.channel+'</span> ');
 
-	 li.append('<span class="timestamp">'+(new Date(message.timestamp).toString())+'</span>');
+	 li.append('<span class="timestamp">'+(new Date().toString())+'</span>');
 	 li.append('<pre class="data">'+JSON.stringify(message)+'</pre>');
 	 window.console.log(li);
 	 $('#messages').prepend(li);

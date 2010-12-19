@@ -166,7 +166,8 @@ proto.__metaRegexp = /^\/meta\/(.*)/;
 
 proto.TIMEOUTS = {
   onConnectionRequest: 10000,
-  onSubscriptionRequest: 100
+  onSubscriptionRequest: 100,
+  onPublicationRquest: 100
 };
 
 module.exports = proto;
