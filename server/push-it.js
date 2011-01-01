@@ -3,7 +3,7 @@ require.paths.unshift(__dirname+"/models/");
 require.paths.unshift(__dirname+"/mqs/");
 
 var socketIo = require('socket.io'),
-    uuid = require('uuid').uuid,
+    uuid = require('uuid-pure').uuid,
     help = require('help').help,
     inspect = require("sys").inspect,
     Agent = require("agent"),

@@ -12,7 +12,8 @@
     
     "dependencies": {
       "socket.io":"0.6.1",
-      "expresso":"0.7.0"
+      "expresso":"0.7.0",
+			"uuid-pure":"1.0.1"
     },
 
     "main": "./server/push-it.js"
