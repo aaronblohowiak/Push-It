@@ -17,7 +17,7 @@ proto.onSubscriptionRequest = function(channel, agent){
   agent.subscribe(channel);
 };
 
-proto.onPublicationRquest = function(channel, agent, message){
+proto.onPublicationRequest = function(channel, agent, message){
   channel.publish(message);
   agent.publicationSuccess(message);
 };
@@ -148,12 +148,12 @@ proto.__onPublicationRequest = function (client, message){
      var chan = message.channel;
      var channel = self.channel(chan);
           
-     agent.requirePublication(self.TIMEOUTS.onPublicationRquest, message, channel);
+     agent.requirePublication(self.TIMEOUTS.onPublicationRequest, message, channel);
      
-     if(channel.onPublicationRquest){
-       channel.onPublicationRquest(channel, agent, message);
+     if(channel.onPublicationRequest){
+       channel.onPublicationRequest(channel, agent, message);
      }else{
-       self.onPublicationRquest(channel, agent, message);
+       self.onPublicationRequest(channel, agent, message);
      }
   });
 };
@@ -167,7 +167,7 @@ proto.__metaRegexp = /^\/meta\/(.*)/;
 proto.TIMEOUTS = {
   onConnectionRequest: 10000,
   onSubscriptionRequest: 100,
-  onPublicationRquest: 100
+  onPublicationRequest: 100
 };
 
 module.exports = proto;

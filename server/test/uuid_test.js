@@ -1,5 +1,5 @@
 var test = {},
-    uuid = require("uuid-pure").uuid,
+    uuid = require("uuid-pure").newId,
     assert = require('assert');
     
 module.exports = test;

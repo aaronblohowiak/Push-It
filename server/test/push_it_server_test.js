@@ -210,7 +210,7 @@ test["custom filter that does nothing should prevent publication"] = function(be
   
   pi = shortenTimeouts(pi);
   
-  pi.onPublicationRquest = function(channel, agent){
+  pi.onPublicationRequest = function(channel, agent){
   };
 
   pi.__onMessage(client, connectionRequestMessage());
