@@ -43,11 +43,17 @@ proto.__onConnection = function (client){
 };
 
 proto.__onMessage = function(client, message){
+  var handler;
   //dispatch message
   if(message.channel && message.uuid  && message.agentId ){
     if(message.channel.substring(0, 6) == "/meta/"){
-      //i am evil. buahahahahahahaha
-      this["__"+message.channel.substring(6)](client, message);
+      handler = this["__"+message.channel.substring(6)];
+      if(handler){
+        handler.call(this, client, message)
+      } else {
+        //allow Push-It users to define their own /meta/ chans
+        this.__onPublicationRequest(client, message); 
+      }
     }else{
       //publication request
       this.__onPublicationRequest(client, message);

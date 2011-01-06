@@ -51,6 +51,11 @@ function publicationRequestMessage(){
   return {uuid: "uuid1", channel:"pants", agentId: "agentId", data:"who framed roger rabbit?"};
 };
 
+function unknownMetaMethod(){
+  return {uuid: "uuid1", channel:"/meta/UNKNOWN", agentId: "agentId", data:"AYBABTU"};
+};
+
+
 test["connect with an invalid message sends error"] = function(){
   var pi = new PushIt;
   var client = new TestClient();
@@ -260,6 +265,25 @@ test["publishing with deleted agent sends error"] = function(){
   
 
   assert.equal(client.lastMessage().successful, false);
+};
+
+
+
+test["Pushing to an unknown meta should not break the server"] = function(){
+  var pi = new PushIt;
+  var client = new TestClient();
+  
+  var thrown = false;
+
+  pi.__onMessage(client, connectionRequestMessage());
+  pi.__onMessage(client, subscriptionRequestMessage());
+  try{
+    pi.__onMessage(client, unknownMetaMethod());    
+  }catch(e){
+    thrown = true;
+  }finally{
+    assert.equal(thrown, false);
+  }
 };
 
 
