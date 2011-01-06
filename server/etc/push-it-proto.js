@@ -43,20 +43,19 @@ proto.__onConnection = function (client){
 };
 
 proto.__onMessage = function(client, message){
-  var handler;
-  //dispatch message
-  if(message.channel && message.uuid  && message.agentId ){
-    if(message.channel.substring(0, 6) == "/meta/"){
-      handler = this["__"+message.channel.substring(6)];
-      if(handler){
-        handler.call(this, client, message)
-      } else {
-        //allow Push-It users to define their own /meta/ chans
+  var handler, requestKind;
+
+  //verify required fields
+  if( message.channel && message.uuid  && message.agentId ){
+    switch(message.channel){
+      case "/meta/connect":
+        this.__connect(client, message);
+        break;
+      case "/meta/subscribe":
+        this.__subscribe(client, message);
+        break;
+      default:
         this.__onPublicationRequest(client, message); 
-      }
-    }else{
-      //publication request
-      this.__onPublicationRequest(client, message);
     }
   }else{
     client.send({
