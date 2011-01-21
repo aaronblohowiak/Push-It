@@ -17,10 +17,12 @@ function Agent(obj){
 
 var agent = Agent;
 
-agent.agents = agents;
-
 agent.get = function(id, callback){
   callback(null, agents[id]);
+};
+
+agent.remove = function(id) {
+  delete agents[id];
 };
 
 agent.prototype.send = function(msg){

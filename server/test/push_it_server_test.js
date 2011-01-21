@@ -5,9 +5,10 @@ require.paths.unshift(__dirname+"/../mqs/");
 var test = {},
     InMemoryMQ = require('in_memory'),
     SubscriptionManager = require('subscription_manager'),
-    agent = require('agent'),
+    mod = require('push-it'),
+    agent = mod.Agent,
     assert = require('assert'),
-    PushIt = require('push-it').PushIt;
+    PushIt = mod.PushIt;
     
     
 function TestClient(){ this.count = 0; this.sentMessages = []; };
@@ -253,7 +254,7 @@ test["publishing with deleted agent sends error"] = function(){
   
 
   pi.__onMessage(client, req);
-  delete agent.agents[agentId];
+  agent.remove(agentId);
   
   pi.__onMessage(client, pub);
   

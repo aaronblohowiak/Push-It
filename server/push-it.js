@@ -199,3 +199,4 @@ extend(PushIt.prototype, {
 });
 
 exports.PushIt = PushIt;
+exports.Agent = Agent;
