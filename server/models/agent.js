@@ -120,7 +120,7 @@ agent.prototype.publicationResponse = function(message, successful, error){
   message.successful = successful;
   message.error = error;
   //dont echo big payloads!
-  message.data = {}; 
+//  message.data = {};
   this.send(message);
 };
 

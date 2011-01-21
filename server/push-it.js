@@ -2,23 +2,30 @@ require.paths.unshift(__dirname+"/lib/");
 require.paths.unshift(__dirname+"/models/");
 require.paths.unshift(__dirname+"/mqs/");
 
-var socketIo = require('socket.io'),
-    uuid = require('uuid-pure').newId,
-    help = require('help').help,
-    inspect = require("sys").inspect,
-    Agent = require("agent"),
-    Channel = require("channel"),
-    InMemoryMQ = require("in_memory"),
-    SubscriptionManager = require("subscription_manager");
+var socketIo = require('socket.io')
+  , uuid = require('uuid-pure').newId
+  , help = require('help').help
+  , inspect = require("sys").inspect
+  , Agent = require("agent")
+  , Channel = require("channel")
+  , InMemoryMQ = require("in_memory")
+  , SubscriptionManager = require("subscription_manager")
+  , sys = require('sys')
+  , EventEmitter = require('events').EventEmitter;
 
 //TODO: real options parsing
-var PushIt = function(server, options){
+var PushIt = function (server, options) {
+  EventEmitter.apply(this, arguments);
+
   if(!options.nohelp) help();
   
   this.server = server;
   this.io = options.socket || socketIo.listen(this.server);  
-  this.setupIO();
-
+  var self = this;
+  this.io.on('connection', function (client) {
+    self.emit('connection', client);
+  });
+//  this.setupIO();
   
   this.mq = new InMemoryMQ();
 
@@ -26,7 +33,15 @@ var PushIt = function(server, options){
   this.subscriptionManager = new SubscriptionManager(this.mq);
 };
 
-PushIt.prototype = {
+PushIt.prototype.__proto__ = EventEmitter.prototype;
+
+function extend (a, b) {
+  for (var k in b) {
+    a[k] = b[k];
+  }
+}
+
+extend(PushIt.prototype, {
   server: {},
   io: {},
   pants: 'ho',
@@ -41,21 +56,21 @@ PushIt.prototype = {
     channel.publish(message);
     agent.publicationSuccess(message);
   },
-  setupIO: function () {
-    var pushIt = this;
-    
-    this.io.on('connection', function(client){
-      pushIt.__onConnection(client);
-      
-      client.on('message', function(message){
-        pushIt.__onMessage(client, message);
-      });
-
-      client.on('disconnect', function(){
-        pushIt.__onDisconnect(client);
-      });
-    });
-  },
+//  setupIO: function () {
+//    var pushIt = this;
+//    
+//    this.io.on('connection', function(client){
+//      pushIt.__onConnection(client);
+//      
+//      client.on('message', function(message){
+//        pushIt.__onMessage(client, message);
+//      });
+//
+//      client.on('disconnect', function(){
+//        pushIt.__onDisconnect(client);
+//      });
+//    });
+//  },
   __onConnection: function (client) {
     //setup authentication-request timeout, possibly
   },
@@ -76,7 +91,7 @@ PushIt.prototype = {
       }
     } else {
       client.send({
-          channel: "/meta/error",
+          channel: "/meta/error"
         , data: "send only messages with a channel, a uuid and an agentId."
         , uuid: "???"
       });
@@ -180,6 +195,6 @@ PushIt.prototype = {
     onSubscriptionRequest: 100,
     onPublicationRequest: 100
   }
-};
+});
 
 exports.PushIt = PushIt;
