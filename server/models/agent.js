@@ -115,13 +115,20 @@ agent.prototype.publicationResponse = function(message, successful, error){
   error || (error = "");
   
   var request = this.publicationRequests[message.uuid];
-  clearTimeout(request.timeout);
+  var newMessage={};
   
-  message.successful = successful;
-  message.error = error;
-  //dont echo big payloads!
-  message.data = {}; 
-  this.send(message);
+  clearTimeout(request.timeout);
+  //perhaps i should also delete the publicationRequest!
+  
+  if(successful){
+    newMessage.channel="/meta/successful";
+  }else{
+    newMessage.channel="/meta/error";
+    newMessage.error = error;
+  }
+  newMessage.uuid = message.uuid;
+   
+  this.send(newMessage);
 };
 
 agent.prototype.requireSubscription = function(timeout, message, channel){
