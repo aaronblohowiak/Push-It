@@ -25,7 +25,8 @@ var PushIt = function (server, options) {
   this.io.on('connection', function (client) {
     self.emit('connection', client);
   });
-//  this.setupIO();
+
+  if (!options.manual) this.setupIO();
   
   this.mq = new InMemoryMQ();
 
@@ -56,21 +57,21 @@ extend(PushIt.prototype, {
     channel.publish(message);
     agent.publicationSuccess(message);
   },
-//  setupIO: function () {
-//    var pushIt = this;
-//    
-//    this.io.on('connection', function(client){
-//      pushIt.__onConnection(client);
-//      
-//      client.on('message', function(message){
-//        pushIt.__onMessage(client, message);
-//      });
-//
-//      client.on('disconnect', function(){
-//        pushIt.__onDisconnect(client);
-//      });
-//    });
-//  },
+  setupIO: function () {
+    var pushIt = this;
+    
+    this.io.on('connection', function(client){
+      pushIt.__onConnection(client);
+      
+      client.on('message', function(message){
+        pushIt.__onMessage(client, message);
+      });
+
+      client.on('disconnect', function(){
+        pushIt.__onDisconnect(client);
+      });
+    });
+  },
   __onConnection: function (client) {
     //setup authentication-request timeout, possibly
   },
