@@ -1,3 +1,7 @@
+require.paths.unshift(__dirname+"/../lib/");
+require.paths.unshift(__dirname+"/../models/");
+require.paths.unshift(__dirname+"/../mqs/");
+
 var test = {},
     MQ = require('in_memory'),
     assert = require('assert');;

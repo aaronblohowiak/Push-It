@@ -1,7 +1,10 @@
+require.paths.unshift(__dirname+"/../lib/");
+require.paths.unshift(__dirname+"/../models/");
+require.paths.unshift(__dirname+"/../mqs/");
+
 var test = {},
     InMemoryMQ = require('in_memory'),
     SubscriptionManager = require('subscription_manager'),
-    proto = require('push-it-proto'),
     agent = require('agent'),
     assert = require('assert');
     
@@ -12,9 +15,6 @@ function PushIt(){
   this.channels = {};
   this.subscriptionManager = new SubscriptionManager(this.mq);
 }
-
-
-PushIt.prototype = proto;
 
 function TestClient(){ this.count = 0; this.sentMessages = []; };
 TestClient.prototype = {
