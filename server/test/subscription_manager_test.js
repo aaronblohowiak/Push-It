@@ -1,7 +1,3 @@
-require.paths.unshift(__dirname+"/../lib/");
-require.paths.unshift(__dirname+"/../models/");
-require.paths.unshift(__dirname+"/../mqs/");
-
 var test = {},
     SM = require('subscription_manager'),
     MQ = require('in_memory'),
@@ -22,6 +18,7 @@ function TestClient(){ this.count = 0; this.sentMessages = []; };
 TestClient.prototype = {
   count: 0,
   sentMessages: [],
+  
   send: function(message){
     this.sentMessages.push(message);
   }

@@ -2,22 +2,22 @@ require.paths.unshift(__dirname+"/lib/");
 require.paths.unshift(__dirname+"/models/");
 require.paths.unshift(__dirname+"/mqs/");
 
-var socketIo = require('socket.io')
-  , uuid = require('uuid-pure').newId
-  , help = require('help').help
-  , inspect = require("sys").inspect
-  , Agent = require("agent")
-  , Channel = require("channel")
-  , InMemoryMQ = require("in_memory")
-  , SubscriptionManager = require("subscription_manager")
-  , sys = require('sys')
-  , EventEmitter = require('events').EventEmitter;
+var socketIo = require('socket.io'),
+    uuid = require('uuid-pure').newId,
+    help = require('help').help,
+    inspect = require("sys").inspect,
+    Agent = require("agent"),
+    Channel = require("channel"),
+    InMemoryMQ = require("in_memory"),
+    SubscriptionManager = require("subscription_manager"),
+    sys = require('sys'),
+    EventEmitter = require('events').EventEmitter;
 
 //TODO: real options parsing
 var PushIt = function (server, options) {
   EventEmitter.apply(this, arguments);
 
-  if(!options.nohelp) help();
+  if(options.help) help();
   
   this.server = server;
   this.io = options.socket || socketIo.listen(this.server);  
@@ -45,18 +45,21 @@ function extend (a, b) {
 extend(PushIt.prototype, {
   server: {},
   io: {},
-  pants: 'ho',
   channels: {},
+  
   onConnectionRequest: function (agent) {
     agent.connected();
   },
+  
   onSubscriptionRequest: function (channel, agent) {
     agent.subscribe(channel);
   },
+  
   onPublicationRequest: function (channel, agent, message) {
     channel.publish(message);
     agent.publicationSuccess(message);
   },
+  
   setupIO: function () {
     var pushIt = this;
     
@@ -72,9 +75,11 @@ extend(PushIt.prototype, {
       });
     });
   },
+
   __onConnection: function (client) {
     //setup authentication-request timeout, possibly
   },
+
   __onMessage: function (client, message) {
     var handler, requestKind;
 
@@ -92,24 +97,27 @@ extend(PushIt.prototype, {
       }
     } else {
       client.send({
-          channel: "/meta/error"
-        , data: "send only messages with a channel, a uuid and an agentId."
-        , uuid: "???"
+        channel: "/meta/error",
+        data: "send only messages with a channel, a uuid and an agentId.",
+        uuid: "???"
       });
     }
   },
+  
   subscribe: function (channel, agent) {
     this.subscriptionManager.subscribe(channel, agent);
   },
+  
   publish: function (channel, message) {
     this.mq.publish(channel.name, message);
   },
+  
   __connect: function (client, message) {
     //create a timeout/monitor
     var agent = new Agent({
-          id: message.agentId
-        , credentials: message.data.credentials || ""
-        , isConnected: false
+        id: message.agentId,
+        credentials: message.data.credentials || "",
+        isConnected: false
       });
     
     agent["new"] = agent.stale = true;
@@ -118,6 +126,7 @@ extend(PushIt.prototype, {
     
     this.onConnectionRequest(agent);
   },
+
   __subscribe: function (client, message) {
     if (message.data == undefined || message.data.channel == undefined) {
       message.successful = false;
@@ -125,8 +134,8 @@ extend(PushIt.prototype, {
       return client.send(message);
     }
     
-    var name = message.data.channel 
-      , self = this;
+    var name = message.data.channel,
+        self = this;
     
     this.__withAgent(client, message.agentId, function (err, agent) {
       if (err) { 
@@ -148,6 +157,7 @@ extend(PushIt.prototype, {
       }
     });
   },
+  
   __withAgent: function (client, agentId, fn) {
     Agent.get(agentId, function(err, agent){
       if(err) return fn(err);
@@ -159,11 +169,13 @@ extend(PushIt.prototype, {
       return fn("no agent");
     });
   },
+  
   channel: function (name) {
     var channel = this.channels[name];
     if(channel) return channel;
     return new Channel(name, this);
   },
+  
   __onPublicationRequest: function (client, message) {
     var self = this;
     
@@ -187,9 +199,11 @@ extend(PushIt.prototype, {
        }
     });
   },
+  
   __onDisconnect: function (client) {
     null;
   },
+  
   __metaRegexp: /^\/meta\/(.*)/,
   TIMEOUTS: {
     onConnectionRequest: 10000,

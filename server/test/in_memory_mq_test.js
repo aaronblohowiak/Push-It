@@ -1,7 +1,3 @@
-require.paths.unshift(__dirname+"/../lib/");
-require.paths.unshift(__dirname+"/../models/");
-require.paths.unshift(__dirname+"/../mqs/");
-
 var test = {},
     MQ = require('in_memory'),
     assert = require('assert');;
@@ -34,7 +30,6 @@ test["subscribe to a channel glob to get messages matching your prefix"] = funct
   var received = 0, n=0;
   
   mq.subscribe("name*", function(){ received++; });
-  
   mq.publish("namekins", "PANTALONES!");
   
   setTimeout(function(){
