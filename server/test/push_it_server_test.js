@@ -250,8 +250,7 @@ test["publishing with deleted agent sends error"] = function(){
   agent.remove(agentId);
   
   pi.__onMessage(client, pub);
-  
-  console.log(client.sentMessages);
+
   assert.equal(client.lastMessage().channel, "/meta/error");
 };
 
