@@ -12,13 +12,13 @@
 		}
 
 		$(function() {
-			self.initConnection();
+			self.initConnection(options);
 		});
 
 	};
 
 	PushIt.prototype = {
-		initConnection: function() {
+		initConnection: function(options) {
 			var self = this;
 
 			var joinRequest = {
@@ -26,21 +26,31 @@
 				channel: "/meta/connect"
 			};
 
-			io.setPath('/push-it/lib/socket.io/');
-      socket = new io.Socket('localhost');
+      socket = new io.Socket(options.hostname);
       this.socket = socket;
       socket.connect();
       
       this.sendMessage(joinRequest);
       
-      socket.addEvent('message', function(data){
-          self.onMessageReceived(data);
+      socket.addEvent('message', function(message){
+        var chan = message.channel;
+        switch(chan){
+          case '/meta/succesful':
+            self.messageCallbacks[message.uuid].onSuccess();
+            break;
+          case '/meta/error':
+            self.messageCallbacks[message.uuid].onSuccess();
+            break;
+          default:
+            console.log(message);
+            self.onMessageReceived(message);
+        }
       });
       
 		},
 
 		onMessageReceived: function(message) {
-		  console.log(message);
+		  console.log("message: ", message);
 			console.error("you must define an onMessageReceived callback!");
 		},
 
@@ -68,18 +78,23 @@
 				console.log("error: the object sent to publish must have channel and message properties");
 				return;
 			}
+			
+			onError || (onError = function(){});
+			onSuccess || (onSuccess = function(){});
 
-      this.sendMessage({
+      var sent = this.sendMessage({
           "data": data.message,
           "channel": data.channel
-        });
+        }, onError, onSuccess);
 		},
 		
-		sendMessage: function(obj, onError, onSuccess){
-		  //eventually, add in credentials / connection id.
+		sendMessage: function(obj, errorHandler, successHandler){
 		  obj.uuid = this.UUID(22, 64);
 		  obj.agentId = this.agentId;
-		  this.messageCallbacks[obj.id] = {onError: onError, onSuccess: onSuccess};
+		  if( errorHandler || successHandler){
+		    this.messageCallbacks[obj.uuid] = {onError: errorHandler, onSuccess: successHandler};		    
+		  }
+		 
 		  this.socket.send(obj);
 		  return obj;
 		},
@@ -99,8 +114,3 @@
 
 	global.PushIt = PushIt;
 })(this);
-
-
-
- 
-  
