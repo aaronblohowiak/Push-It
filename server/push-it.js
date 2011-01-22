@@ -18,20 +18,20 @@ var PushIt = function (server, options) {
   EventEmitter.apply(this, arguments);
 
   if(options.help) help();
-  
+
   this.server = server;
-  this.io = options.socket || socketIo.listen(this.server);  
+  
+  this.io = options.socket || socketIo.listen(this.server);
   var self = this;
   this.io.on('connection', function (client) {
     self.emit('connection', client);
   });
-
-  if (!options.manual) this.setupIO();
+  if (!options.skipSetupIO) this.setupIO();
   
-  this.mq = new InMemoryMQ();
+  this.mq = options.mq || new InMemoryMQ();
 
-  this.channels = {};
-  this.subscriptionManager = new SubscriptionManager(this.mq);
+  this.channels = options.channels || {};
+  this.subscriptionManager = options.subscriptionManager || new SubscriptionManager(this.mq);
 };
 
 PushIt.prototype.__proto__ = EventEmitter.prototype;
