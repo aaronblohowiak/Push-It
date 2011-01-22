@@ -17,10 +17,12 @@ function Agent(obj){
 
 var agent = Agent;
 
-agent.agents = agents;
-
 agent.get = function(id, callback){
   callback(null, agents[id]);
+};
+
+agent.remove = function(id) {
+  delete agents[id];
 };
 
 agent.prototype.send = function(msg){
@@ -118,8 +120,8 @@ agent.prototype.publicationResponse = function(message, successful, error){
   var newMessage={};
   
   clearTimeout(request.timeout);
-  //perhaps i should also delete the publicationRequest!
-  
+  delete this.publicationRequests[message.uuid];
+
   if(successful){
     newMessage.channel="/meta/successful";
   }else{

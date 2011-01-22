@@ -8,7 +8,7 @@ uuid_test:
 	 expresso -I lib test/uuid_test.js
 
 push_it_server_test:
-	 expresso -I lib -I mqs -I etc -I models test/push_it_server_test.js
+	 expresso -I . -I lib -I mqs -I etc -I models test/push_it_server_test.js
 
 expresso:
-	expresso -I lib -I mqs -I etc -I models .
+	expresso -I . -I lib -I mqs -I etc -I models .

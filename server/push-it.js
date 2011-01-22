@@ -9,38 +9,57 @@ var socketIo = require('socket.io'),
     Agent = require("agent"),
     Channel = require("channel"),
     InMemoryMQ = require("in_memory"),
-    SubscriptionManager = require("subscription_manager");
+    SubscriptionManager = require("subscription_manager"),
+    sys = require('sys'),
+    EventEmitter = require('events').EventEmitter;
 
 //TODO: real options parsing
-var PushIt = function(server, options){
-  if(!options.nohelp) help();
-  
+var PushIt = function (server, options) {
+  EventEmitter.apply(this, arguments);
+
+  if(options.help) help();
+
   this.server = server;
-  this.io = options.socket || socketIo.listen(this.server);  
-  this.setupIO();
-
   
-  this.mq = new InMemoryMQ();
+  this.io = options.socket || socketIo.listen(this.server);
+  var self = this;
+  this.io.on('connection', function (client) {
+    self.emit('connection', client);
+  });
+  if (!options.skipSetupIO) this.setupIO();
+  
+  this.mq = options.mq || new InMemoryMQ();
 
-  this.channels = {};
-  this.subscriptionManager = new SubscriptionManager(this.mq);
+  this.channels = options.channels || {};
+  this.subscriptionManager = options.subscriptionManager || new SubscriptionManager(this.mq);
 };
 
-PushIt.prototype = {
+PushIt.prototype.__proto__ = EventEmitter.prototype;
+
+function extend (a, b) {
+  for (var k in b) {
+    a[k] = b[k];
+  }
+}
+
+extend(PushIt.prototype, {
   server: {},
   io: {},
-  pants: 'ho',
   channels: {},
+  
   onConnectionRequest: function (agent) {
     agent.connected();
   },
+  
   onSubscriptionRequest: function (channel, agent) {
     agent.subscribe(channel);
   },
+  
   onPublicationRequest: function (channel, agent, message) {
     channel.publish(message);
     agent.publicationSuccess(message);
   },
+  
   setupIO: function () {
     var pushIt = this;
     
@@ -56,9 +75,11 @@ PushIt.prototype = {
       });
     });
   },
+
   __onConnection: function (client) {
     //setup authentication-request timeout, possibly
   },
+
   __onMessage: function (client, message) {
     var handler, requestKind;
 
@@ -76,24 +97,27 @@ PushIt.prototype = {
       }
     } else {
       client.send({
-          channel: "/meta/error",
-        , data: "send only messages with a channel, a uuid and an agentId."
-        , uuid: "???"
+        channel: "/meta/error",
+        data: "send only messages with a channel, a uuid and an agentId.",
+        uuid: "???"
       });
     }
   },
+  
   subscribe: function (channel, agent) {
     this.subscriptionManager.subscribe(channel, agent);
   },
+  
   publish: function (channel, message) {
     this.mq.publish(channel.name, message);
   },
+  
   __connect: function (client, message) {
     //create a timeout/monitor
     var agent = new Agent({
-          id: message.agentId
-        , credentials: message.data.credentials || ""
-        , isConnected: false
+        id: message.agentId,
+        credentials: message.data.credentials || "",
+        isConnected: false
       });
     
     agent["new"] = agent.stale = true;
@@ -102,6 +126,7 @@ PushIt.prototype = {
     
     this.onConnectionRequest(agent);
   },
+
   __subscribe: function (client, message) {
     if (message.data == undefined || message.data.channel == undefined) {
       message.successful = false;
@@ -109,8 +134,8 @@ PushIt.prototype = {
       return client.send(message);
     }
     
-    var name = message.data.channel 
-      , self = this;
+    var name = message.data.channel,
+        self = this;
     
     this.__withAgent(client, message.agentId, function (err, agent) {
       if (err) { 
@@ -132,6 +157,7 @@ PushIt.prototype = {
       }
     });
   },
+  
   __withAgent: function (client, agentId, fn) {
     Agent.get(agentId, function(err, agent){
       if(err) return fn(err);
@@ -143,19 +169,25 @@ PushIt.prototype = {
       return fn("no agent");
     });
   },
+  
   channel: function (name) {
     var channel = this.channels[name];
     if(channel) return channel;
     return new Channel(name, this);
   },
+  
   __onPublicationRequest: function (client, message) {
     var self = this;
     
     this.__withAgent(client, message.agentId, function(err, agent){
        if(err){ 
-         message.successful = false;
-         message.error = "unknown agentId";
-         client.send(message);
+         //change to publication failure
+         var newMessage = {
+           uuid: message.uuid,
+           error: "unknown agentId",
+           channel: "/meta/error"
+         };
+         client.send(newMessage);
          return;
        }
        
@@ -171,15 +203,18 @@ PushIt.prototype = {
        }
     });
   },
+  
   __onDisconnect: function (client) {
     null;
   },
+  
   __metaRegexp: /^\/meta\/(.*)/,
   TIMEOUTS: {
     onConnectionRequest: 10000,
     onSubscriptionRequest: 100,
     onPublicationRequest: 100
   }
-};
+});
 
 exports.PushIt = PushIt;
+exports.Agent = Agent;
