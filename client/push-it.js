@@ -26,6 +26,10 @@
 				channel: "/meta/connect"
 			};
 
+      if(!options.hostname){
+        alert("You must pass a hostname to initialize Push-It");
+      }
+      
       socket = new io.Socket(options.hostname);
       this.socket = socket;
       socket.connect();
