@@ -1,0 +1,6 @@
+01-26-11
+-----
+  Fixed refactoring error in the client
+  Updated the debug/ example
+    - Add document.domain auto-hostname goodness.
+    

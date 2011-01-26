@@ -14,7 +14,6 @@
 		$(function() {
 			self.initConnection(options);
 		});
-
 	};
 
 	PushIt.prototype = {
@@ -76,10 +75,19 @@
 			});
     },
     
-		publish: function(data, onError, onSuccess) {
-			//			console.log("PUBLISHING");
-			if (!data.hasOwnProperty("channel") || !data.hasOwnProperty("message")) {
-				console.log("error: the object sent to publish must have channel and message properties");
+		publish: function(message, onError, onSuccess) {
+      //For a little while, `data` and message were confused in this function,
+      //  and i was requiring clients to send the body of the message in a 
+      //    param named "message", but this was confusing because the rest of the system calls it "data"
+      //  I am pretty sure that this is the result of a refactoring gone wrong =(
+      //  Anyway, the three lines that follow this comment are there to allow older clients to "just work"
+      //  while making it so that the error handling console statements are still correct.
+			if(!message.hasOwnProperty("data") && message.hasOwnProperty("message")){
+			  message.data = message.message;
+			}
+			
+			if (!message.hasOwnProperty("channel") || !message.hasOwnProperty("data")) {
+				console.log("error: the object sent to publish must have channel and data properties");
 				return;
 			}
 			
@@ -87,9 +95,9 @@
 			onSuccess || (onSuccess = function(){});
 
       var sent = this.sendMessage({
-          "data": data.message,
-          "channel": data.channel
-        }, onError, onSuccess);
+        "data": message.message,
+        "channel": message.channel
+      }, onError, onSuccess);
 		},
 		
 		sendMessage: function(obj, errorHandler, successHandler){
@@ -102,7 +110,6 @@
 		  this.socket.send(obj);
 		  return obj;
 		},
-		
 
     UUID: function(len, radix) {
   		var BASE64CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split(''); 
@@ -111,7 +118,6 @@
       len = len || 22;
 
       for (i = 0; i < len; i++) uuid[i] = chars[0 | Math.random()*radix];
-
       return uuid.join('');
     }
 	};

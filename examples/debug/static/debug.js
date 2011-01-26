@@ -1,7 +1,8 @@
 $(function() {
 	window.pushIt = new PushIt({
 		prefix: "/push-it",
-		channels: []
+		channels: [],
+		hostname: document.domain
 	});
 
 	$(document).delegate('#post', 'submit', function(event) {
