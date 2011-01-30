@@ -11,8 +11,11 @@ function Agent(obj){
     agents[obj.id] = this; // auto-save. TODO: garbage collect
     this.credentials = obj.credentials;
     this.isConnected = obj.isConnected;
-    this.client = obj.client;
-    
+
+    if(obj.client){
+      this.client = obj.client;
+      obj.client.agentId = this.id;      
+    }
 };
 
 var agent = Agent;
@@ -47,8 +50,8 @@ agent.prototype.connectionDenied = function(reason){
   clearTimeout(this.authenticationTimeout);
   this.send({
     "channel":"/meta/connect",
-    "agentId":this.id,
     "successful": false,
+    "agentId":this.id,
     "error": reason
   }); 
 };

@@ -2,7 +2,8 @@ var PORT = 8001;
 
 var PushIt = require (__dirname + '/../../server/push-it').PushIt,
     fs = require('fs'),
-    connect = require('connect');
+    connect = require('connect'),
+    sys = require('sys');
 
  try{
    var options = JSON.parse(fs.readFileSync(__dirname+"/options.json"))  
@@ -38,4 +39,6 @@ rejectChannel.onSubscriptionRequest = function(channel, agent){
   agent.subscriptionDenied(channel, "this is the reject channel");
 }
 
-
+pi.onDisconnect = function(agent){
+  console.log("disconnected agent: " + agent.id);
+}

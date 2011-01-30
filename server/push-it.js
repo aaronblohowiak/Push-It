@@ -60,6 +60,10 @@ extend(PushIt.prototype, {
     agent.publicationSuccess(message);
   },
   
+  onDisconnect: function(agent){
+    //null
+  },
+  
   setupIO: function () {
     var pushIt = this;
     
@@ -76,10 +80,12 @@ extend(PushIt.prototype, {
     });
   },
 
+  //this is when the socketIO connection happens
   __onConnection: function (client) {
     //setup authentication-request timeout, possibly
   },
 
+  //this is when socketIO says there is a message
   __onMessage: function (client, message) {
     var handler, requestKind;
 
@@ -104,29 +110,33 @@ extend(PushIt.prototype, {
     }
   },
   
+  //make a subscription, no checks
   subscribe: function (channel, agent) {
     this.subscriptionManager.subscribe(channel, agent);
   },
   
+  //go ahead and actually publish the message
   publish: function (channel, message) {
     this.mq.publish(channel.name, message);
   },
   
+  //internal connect function, used to set up agent for request processing
   __connect: function (client, message) {
     //create a timeout/monitor
     var agent = new Agent({
         id: message.agentId,
         credentials: message.data.credentials || "",
-        isConnected: false
+        isConnected: false,
+        client: client
       });
     
     agent["new"] = agent.stale = true;
-    agent.client = client;
     agent.requireConnection(this.TIMEOUTS.onConnectionRequest);
     
     this.onConnectionRequest(agent);
   },
 
+  //internal subscription request processing, used to set up req context before auth decision
   __subscribe: function (client, message) {
     if (message.data == undefined || message.data.channel == undefined) {
       message.successful = false;
@@ -158,6 +168,7 @@ extend(PushIt.prototype, {
     });
   },
   
+  //helper function for setting up event handling
   __withAgent: function (client, agentId, fn) {
     Agent.get(agentId, function(err, agent){
       if(err) return fn(err);
@@ -170,12 +181,14 @@ extend(PushIt.prototype, {
     });
   },
   
+  //get a channel by name or make a new one.
   channel: function (name) {
     var channel = this.channels[name];
     if(channel) return channel;
     return new Channel(name, this);
   },
   
+  //set up the context for publication request processing
   __onPublicationRequest: function (client, message) {
     var self = this;
     
@@ -204,8 +217,21 @@ extend(PushIt.prototype, {
     });
   },
   
+  //when an agent disconnects, set up the context to handle that event.
   __onDisconnect: function (client) {
-    null;
+    var self = this,
+        agentId = client.agentId;
+    
+    if(agentId){
+      var agent = Agent.get(agentId, function(err, agent){
+        if(err){ 
+          console.log("Error getting agent "+ agentId + " on disconnect.");
+        }else{
+          Agent.remove(agentId);
+          self.onDisconnect(agent);
+        }
+      });
+    }
   },
   
   __metaRegexp: /^\/meta\/(.*)/,
