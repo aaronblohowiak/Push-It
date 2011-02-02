@@ -3,7 +3,7 @@
     "author": "Aaron Blohowiak <aaron.blohowiak@gmail.com>",
     "description": "Pub/Sub for the browser",
     "keywords": ["push", "pub/sub", "socket.io"],
-    "version": "0.0.1pre2",
+    "version": "0.0.1pre4",
     "homepage": "http://github.com/aaronblohowiak/Push-It",
     "repository" : { 
       "type" : "git",
@@ -11,7 +11,7 @@
     },
     
     "dependencies": {
-      "socket.io":"0.6.1",
+      "socket.io":"0.6.8",
       "expresso":"0.7.0",
 			"uuid-pure":"1.0.1"
     },
