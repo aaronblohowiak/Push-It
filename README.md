@@ -24,7 +24,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
 # Client
       var channels = ["stories/5", "calendar"];
       var credentials = document.cookie; 
-      pushIt = new PushIt({prefix: '/push-it/', channels: channels, credentials: credentials});
+      pushIt = new PushIt({channels: channels, credentials: credentials});
 
       var msgId = pushIt.publish(channel, data, onError, onSuccess);
 
@@ -51,7 +51,6 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
       //open your port
       server.listen(8001);
 
-
       //read the optional options file. sync is usually avoided, but fine for server statup
       var options = JSON.parse(fs.readFileSync(__dirname+"/options.json"))  
 
@@ -60,7 +59,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
 
       //customize security gates. default is to permit all actions.
       pi.onConnectionRequest = function(agent){
-        if(agent.credentials == "it's meeee!")
+        if(agent.credentials == "it's meeee!") //reasonable default ;)
           agent.connected();
       }
   
@@ -115,7 +114,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0,
   
 ###6. An agent disconnects
 
-    PushIt.onDisconnection(agent)
+    PushIt.onDisconnect(agent)
   
   This is provided for your convenience and completeness.
 
