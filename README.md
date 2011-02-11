@@ -4,7 +4,7 @@ Push-It gives you an API for realtime pub/sub in the browser. On the server, it 
 
 ## Dependencies
 
-Self-contained on the client.  On the server, Push-It is tested with Node 0.2.0, Redis 1.3.17 and STOMP 1.0. Redis and STOMP are optional.
+Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
 
 # Overall Design
   The design takes the best of [bayeux](http://svn.cometd.com/trunk/bayeux/bayeux.html), layers it on top of [socket.io](http://socket.io/) and provides you a simple and clear way to define security for your application.
