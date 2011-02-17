@@ -117,7 +117,11 @@ extend(PushIt.prototype, {
   
   //go ahead and actually publish the message
   publish: function (channel, message) {
-    this.mq.publish(channel.name, message);
+    if(typeof(channel) != "string"){
+      channel = channel.name;
+    }
+
+    this.mq.publish(channel, {channel: channel, data: message});
   },
   
   //internal connect function, used to set up agent for request processing

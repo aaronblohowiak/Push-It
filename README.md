@@ -8,9 +8,9 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
 
 # Overall Design
   The design takes the best of [bayeux](http://svn.cometd.com/trunk/bayeux/bayeux.html), layers it on top of [socket.io](http://socket.io/) and provides you a simple and clear way to define security for your application.
-  
+
   With callbacks, you can easily customize the system to provide security and message-routing functionality.
-  
+
   The system is designed with scaling in mind, so you will be able to run multiple Push-It servers without worrying about sticky sessions once Socket.IO supports pluggable persistence.  Please email aaron.blohowiak@gmail.com if this is something you require.
   
 ## Security

@@ -1,3 +1,17 @@
+0.0.1pre5 02-15-11
+----
+  Whoops.  Credentials now passed through client.
+  I may factor the Push-It client to its own repo.
+  
+0.0.1pre4 02-11-11
+----
+  **BREAKING CHANGE** previously undocumented 
+    server-side pushIt.publish(channel, message)
+  took a Channel object and a Message.
+  It now takes a string and the data for delivery.
+  Added a test for this.
+  
+
 0.0.1pre3 01-30-11
 ----
   Created onDisconnect callback, made it work. default no-op

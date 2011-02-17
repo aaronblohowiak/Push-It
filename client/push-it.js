@@ -7,6 +7,9 @@
 		this.agentId = this.UUID(22, 64);
 
 		this.channels = [window.location.href];
+		
+		options.credentials || (options.credentials = "it is meeeee");
+    
 		if (options.channels) {
 			this.channels = this.channels.concat(options.channels);
 		}
@@ -21,7 +24,7 @@
 			var self = this;
 
 			var joinRequest = {
-        data: { credentials: "it is meeeee" },
+        data: { credentials: options.credentials },
 				channel: "/meta/connect"
 			};
 

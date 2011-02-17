@@ -234,6 +234,20 @@ test["publishing should be successful by default"] = function(){
   assert.equal(lm.channel, "/meta/successful");
 };
 
+test["publishing with channel as string name should work"] = function(){
+  var pi = new PushIt({}, { socket: {on: noop}});
+  var client = new TestClient();
+  var req = connectionRequestMessage(),
+      sub = subscriptionRequestMessage();
+      pub = publicationRequestMessage();
+
+  pi.__onMessage(client, connectionRequestMessage());
+  pi.__onMessage(client, subscriptionRequestMessage());
+
+  pi.publish(pub.channel, pub);
+  console.log(client.lastMessage())
+};
+
 
 test["publishing with deleted agent sends error"] = function(){
   var pi = new PushIt({}, { socket: {on: noop}});
