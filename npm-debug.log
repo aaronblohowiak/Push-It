@@ -1,0 +1,19 @@
+info it worked if it ends with ok
+verbose cli [ 'node', '/usr/local/bin/npm', 'publish', '.' ]
+info using npm@1.0.6
+info using node@v0.4.7
+verbose config file /Users/aaronblohowiak/.npmrc
+verbose config file /usr/local/etc/npmrc
+verbose publish [ '.' ]
+ERR! couldn't read package.json in .
+ERR! Failed to parse json
+ERR! Unexpected string
+ERR! File: package.json
+ERR! JSON.parse Failed to parse package.json data.
+ERR! JSON.parse package.json must be actual JSON, not just JavaScript.
+ERR! JSON.parse This is not a bug in npm.
+ERR! JSON.parse Tell the package author to fix their package.json file.
+ERR! 
+ERR! System Darwin 10.7.0
+ERR! command "node" "/usr/local/bin/npm" "publish" "."
+verbose exit [ 1, true ]

@@ -26,7 +26,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
       var credentials = document.cookie; 
       pushIt = new PushIt({channels: channels, credentials: credentials});
 
-      var msgId = pushIt.publish(channel, data, onError, onSuccess);
+      var msgId = pushIt.publish(message, onError, onSuccess);
 
       //set up message handler
       pushIt.onMessageReceived = function(channel, message){
@@ -72,7 +72,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
   1. check the agent.credentials however you see fit.
   2. if they are valid, call agent.connected()
   3. if they are invalid or you have an error, call agent.connectionDenied(reason)
-  4. if you do not call disconnect or connected, they will be denied after pushIt.TIMEOUTS.onConnectionRequest seconds
+  4. if you do not call disconnect or connected, they will be denied after pushIt.TIMEOUTS.onConnectionRequest milliseconds
 
 ###2. An agent subscribes to channels
 
@@ -84,7 +84,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
   1. check agent.credentials however you see fit
   2. if the agent is allowed to receive on this channel, call agent.subscribe(channel)
   3. if the agent is not allowed to receive on this channel,  call agent.subscriptionDenied(channel, reason)
-  4. if you do not call subscribe or subscriptionDenied, they will be automatically disconnected after pushIt.TIMEOUTS.onSubscriptionRequest seconds
+  4. if you do not call subscribe or subscriptionDenied, they will be automatically disconnected after pushIt.TIMEOUTS.onSubscriptionRequest milliseconds
     
 ###3. An agent publishes to channels
   
@@ -97,7 +97,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
   2. if the agent is allowed to publish on this channel, call channel.publish(message).  You may publish the message to as many channels as you'd like.
   3. call agent.publicationSuccess(message) if you have published the message (or dealt with it in some other way, like posting it to a rest service or logging it or whatever else you'd like,) 
   4. if the agent is not allowed to publish on this channel,  call agent.publicationDenied(message, reason)
-  5. if you do not call agent.publicationDenied or agent.publicationSuccess, then a publicationDenied will be automatically sent  after pushIt.TIMEOUTS.onPublicationRequest seconds
+  5. if you do not call agent.publicationDenied or agent.publicationSuccess, then a publicationDenied will be automatically sent  after pushIt.TIMEOUTS.onPublicationRequest milliseconds
   
 ###4. An message is sent to a channel where an agent has a subscription.
   
@@ -140,7 +140,7 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.0
   * Message (stuff to be routed)
     * uuid
     * channel (uuid)
-    * payload (application-defined)
+    * data (application-defined)
   * Subscription (the connection between an agent and a channel)
     * uuid
     * channel (uuid)

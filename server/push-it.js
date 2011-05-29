@@ -241,8 +241,8 @@ extend(PushIt.prototype, {
   __metaRegexp: /^\/meta\/(.*)/,
   TIMEOUTS: {
     onConnectionRequest: 10000,
-    onSubscriptionRequest: 100,
-    onPublicationRequest: 100
+    onSubscriptionRequest: 1000,
+    onPublicationRequest: 1000
   }
 });
 
