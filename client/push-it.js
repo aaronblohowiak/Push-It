@@ -41,7 +41,7 @@
       socket.addEvent('message', function(message){
         var chan = message.channel;
         switch(chan){
-          case '/meta/succesful':
+          case '/meta/successful':
             self.messageCallbacks[message.uuid].onSuccess();
             break;
           case '/meta/error':
