@@ -1,3 +1,13 @@
+0.0.1pre10 02-15-11
+----
+  Closing issues related to docs
+  onSuccess should now be called correctly
+  pass message to onSuccess and onError
+  allow socket.io object to be passed in with options.socket
+  bumped server-side timeouts to 1 second
+  updated timeout docs to reflect ms accuracy instead of second accuracy.
+  thanks to sentientmatter for filing issues!
+
 0.0.1pre5 02-15-11
 ----
   Whoops.  Credentials now passed through client.
