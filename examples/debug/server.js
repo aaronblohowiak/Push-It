@@ -2,7 +2,7 @@ var PORT = 8001;
 
 var PushIt = require (__dirname + '/../../server/push-it').PushIt,
     fs = require('fs'),
-    connect = require('connect'),
+    connect = require(__dirname+'/../../node_modules/connect/lib/connect/'),
     sys = require('sys');
 
  try{

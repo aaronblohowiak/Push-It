@@ -21,18 +21,22 @@
 
 	PushIt.prototype = {
 		initConnection: function(options) {
-			var self = this;
+			var self = this, socket;
 
 			var joinRequest = {
         data: { credentials: options.credentials },
 				channel: "/meta/connect"
 			};
-
-      if(!options.hostname){
-        alert("You must pass a hostname to initialize Push-It");
-      }
       
-      socket = new io.Socket(options.hostname);
+      if(options.socket){
+        socket = options.socket;
+      }else{
+        if(!options.hostname){
+          alert("You must pass a hostname to initialize Push-It.");
+        }
+        socket = new io.Socket(options.hostname);
+      }
+
       this.socket = socket;
       socket.connect();
       
@@ -42,13 +46,12 @@
         var chan = message.channel;
         switch(chan){
           case '/meta/successful':
-            self.messageCallbacks[message.uuid].onSuccess();
+            self.messageCallbacks[message.uuid].onSuccess(message);
             break;
           case '/meta/error':
-            self.messageCallbacks[message.uuid].onError();
+            self.messageCallbacks[message.uuid].onError(message);
             break;
           default:
-            console.log(message);
             self.onMessageReceived(message);
         }
       });

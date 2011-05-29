@@ -1,4 +1,15 @@
 $(function() {
+  
+  function onError(data){
+    console.log("ERROR!");
+    console.log(data);
+  }
+  
+  function onSuccess(data){
+    console.log("SUCCESS CONFIRMATION RECEIVED");
+    console.log(data);
+  }
+  
 	window.pushIt = new PushIt({
 		prefix: "/push-it",
 		channels: [],
@@ -16,7 +27,7 @@ $(function() {
 			window.pushIt.publish({
 				channel: channel,
 				message: message
-			});
+			}, onError, onSuccess);
 		}
 
 		return false;
@@ -38,7 +49,6 @@ $(function() {
 	});
 	
 	pushIt.onMessageReceived = function(message){
-	 console.log("aaaah", message)
 	 var li = $('<li/>');
 	 li.append('<span class="channel">'+message.channel+'</span> ');
 
