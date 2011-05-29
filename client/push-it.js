@@ -17,7 +17,7 @@
 		$(function() {
 			self.initConnection(options);
 		});
-	};
+	}
 
 	PushIt.prototype = {
 		initConnection: function(options) {
@@ -45,7 +45,7 @@
             self.messageCallbacks[message.uuid].onSuccess();
             break;
           case '/meta/error':
-            self.messageCallbacks[message.uuid].onSuccess();
+            self.messageCallbacks[message.uuid].onError();
             break;
           default:
             console.log(message);
@@ -115,7 +115,7 @@
 		},
 
     UUID: function(len, radix) {
-  		var BASE64CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split(''); 
+      var BASE64CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split(''); 
       var chars = BASE64CHARS, uuid = [], i=0;
       radix = radix || chars.length;
       len = len || 22;
