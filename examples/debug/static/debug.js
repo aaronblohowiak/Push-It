@@ -26,7 +26,7 @@ $(function() {
 		if (message.length) {
 			window.pushIt.publish({
 				channel: channel,
-				message: message
+				data: message
 			}, onError, onSuccess);
 		}
 

@@ -101,7 +101,7 @@
 			onSuccess || (onSuccess = function(){});
 
       var sent = this.sendMessage({
-        "data": message.message,
+        "data": message.data,
         "channel": message.channel
       }, onError, onSuccess);
 		},
