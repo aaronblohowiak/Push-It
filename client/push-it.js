@@ -40,11 +40,21 @@
       this.socket = socket;
       socket.connect();
       
-      this.sendMessage(joinRequest);
+      this.sendMessage(joinRequest)
+      
+      this.onConnect = function(){
+        for (var i = options.channels.length - 1; i >= 0; i--){
+          console.log("subscribing")
+          self.subscribe(options.channels[i]);
+        };
+      }
       
       socket.addEvent('message', function(message){
         var chan = message.channel;
         switch(chan){
+          case '/meta/connect':
+            if(self.onConnect) self.onConnect();
+            break
           case '/meta/successful':
             self.messageCallbacks[message.uuid].onSuccess(message);
             break;
@@ -55,7 +65,6 @@
             self.onMessageReceived(message);
         }
       });
-      
 		},
 
 		onMessageReceived: function(message) {
