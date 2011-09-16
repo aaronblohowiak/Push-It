@@ -51,7 +51,7 @@
       }
       
       socket.onmessage =function(message){
-        console.log(message);
+        message = message.data;
         var chan = message.channel;
         switch(chan){
           case '/meta/connect':
