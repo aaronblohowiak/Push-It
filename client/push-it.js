@@ -31,25 +31,27 @@
       if(options.socket){
         socket = options.socket;
       }else{
-        if(!options.hostname){
-          alert("You must pass a hostname to initialize Push-It.");
+        if(!options.endpoint){
+          alert("You must pass an endpoint to initialize Push-It.");
         }
-        socket = new io.Socket(options.hostname);
+        var socket = new SockJS(options.endpoint);
       }
 
       this.socket = socket;
-      socket.connect();
       
-      this.sendMessage(joinRequest)
+      var self=this;
+      socket.onopen = function(){
+        self.sendMessage(joinRequest);
+      }
       
       this.onConnect = function(){
         for (var i = options.channels.length - 1; i >= 0; i--){
-          console.log("subscribing")
           self.subscribe(options.channels[i]);
         };
       }
       
-      socket.addEvent('message', function(message){
+      socket.onmessage =function(message){
+        console.log(message);
         var chan = message.channel;
         switch(chan){
           case '/meta/connect':
@@ -64,7 +66,7 @@
           default:
             self.onMessageReceived(message);
         }
-      });
+      }
 		},
 
 		onMessageReceived: function(message) {

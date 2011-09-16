@@ -1,8 +1,8 @@
 var test = {},
     InMemoryMQ = require('in_memory'),
     SubscriptionManager = require('subscription_manager'),
-    agent = require('push-it').Agent,
-    PushIt = require('push-it').PushIt,
+    agent = require('../push-it').Agent,
+    PushIt = require('../push-it').PushIt,
     assert = require('assert');
 
 function TestClient(){ this.count = 0; this.sentMessages = []; };

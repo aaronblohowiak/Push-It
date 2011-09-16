@@ -29,7 +29,6 @@ console.log("now connected and listening on "+ PORT);
 var pi = new PushIt(server, options);
 
 pi.onConnectionRequest = function(agent){
-  console.log(agent.client.request.headers.origin);
   agent.connected();
 }
 

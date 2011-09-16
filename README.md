@@ -7,11 +7,11 @@ Push-It gives you an API for realtime pub/sub in the browser. On the server, it 
 Self-contained on the client.  On the server, Push-It is tested with Node 0.4.7
 
 # Overall Design
-  The design takes the best of [bayeux](http://svn.cometd.com/trunk/bayeux/bayeux.html), layers it on top of [socket.io](http://socket.io/) and provides you a simple and clear way to define security for your application.
+  The design takes the best of [bayeux](http://svn.cometd.com/trunk/bayeux/bayeux.html), layers it on top of [sockjs](https://github.com/majek/sockjs-client) and provides you a simple and clear way to define security for your application.
 
   With callbacks, you can easily customize the system to provide security and message-routing functionality.
 
-  The system is designed with scaling in mind, so you will be able to run multiple Push-It servers without worrying about sticky sessions once Socket.IO supports pluggable persistence.  Please email aaron.blohowiak@gmail.com if this is something you require.
+  The system is designed with scaling in mind, so you will be able to run multiple Push-It servers without worrying about sticky sessions once sockjs supports pluggable persistence.  Please email aaron.blohowiak@gmail.com if this is something you require.
   
 ## Security
   You should override this: The default behavior of the system is to be completely open and echo all messages published to all subscribers on a per-channel basis.
@@ -145,13 +145,3 @@ Self-contained on the client.  On the server, Push-It is tested with Node 0.4.7
     * uuid
     * channel (uuid)
     * agent (uuid)
-
-# Scaling Push-It
-
-### Push-It has persistence and message-bus needs.  
-
-The underlying browser-server connection is provided by Socket.IO, which does not currently scale. Enabling multi-node installs will requiring hacking socket.io's transports to use a shared-memory store (redis/mongo/etc) for its data.  If you'd like to support this, please contact aaron.blohowiak@gmail.com
-
-For persistence, Push-It has a pluggable asynchronous data storage layer.  This will let you store your data in-process, with redis, or you can write your own adapter.
-
-For messaging, Push-It has a pluggable message bus layer.  This will let you pump messages in-process or with an external broker so you can scale.  Currently, Push-It supports in-process, redis and stomp.  I'd like to implement 0mq as well.  Existing message queues can scale to millions of messages a second, so Push-It is ready to scale when Socket.IO can operate in a shared-nothing way.

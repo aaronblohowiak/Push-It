@@ -1,26 +1,27 @@
 {
-    "name": "push-it",
-    "author": "Aaron Blohowiak <aaron.blohowiak@gmail.com>",
-    "description": "Pub/Sub for the browser",
-    "keywords": ["push", "pub/sub", "socket.io"],
-    "version": "0.0.3",
-    "homepage": "http://github.com/aaronblohowiak/Push-It",
-    "repository" : { 
-      "type" : "git",
-      "url" : "git://github.com/aaronblohowiak/Push-It"
-    },
-    "devDependencies" : {
-      "expresso":"0.7.0"
-    },
-    "dependencies" : {
-      "socket.io":"0.6.8",
-			"uuid-pure":"1.0.10"
-    },
-
-    "browserify" : {
-        "main" : "./client/push-it.js"
-    },
-    
-    "main": "./server/push-it.js"    
+  "name": "push-it",
+  "author": "Aaron Blohowiak <aaron.blohowiak@gmail.com>",
+  "description": "Pub/Sub for the browser",
+  "keywords": [
+    "push",
+    "pub/sub",
+    "sockjs"
+  ],
+  "version": "0.1.0",
+  "homepage": "http://github.com/aaronblohowiak/Push-It",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/aaronblohowiak/Push-It"
+  },
+  "devDependencies" : {
+    "expresso":"0.7.0"
+  },
+  "dependencies": {
+    "sockjs": "0.0.4",
+    "uuid-pure": "1.0.10"
+  },
+  "browserify": {
+    "main": "./client/push-it.js"
+  },
+  "main": "./server/push-it.js"
 }
-

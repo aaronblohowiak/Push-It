@@ -11,9 +11,8 @@ $(function() {
   }
   
 	window.pushIt = new PushIt({
-		prefix: "/push-it",
 		channels: [],
-		hostname: document.domain
+  		endpoint: window.location.protocol+"//"+window.location.hostname+":"+window.location.port.toString()+"/pi/"
 	});
 
 	$(document).delegate('#post', 'submit', function(event) {

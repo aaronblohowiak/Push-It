@@ -1,15 +1,11 @@
-require.paths.unshift(__dirname+"/lib/");
-require.paths.unshift(__dirname+"/models/");
-require.paths.unshift(__dirname+"/mqs/");
-
-var socketIo = require('socket.io'),
+var sjs = require('sockjs'),
     uuid = require('uuid-pure').newId,
-    help = require('help').help,
+    help = require('./lib/help').help,
     inspect = require("sys").inspect,
-    Agent = require("agent"),
-    Channel = require("channel"),
-    InMemoryMQ = require("in_memory"),
-    SubscriptionManager = require("subscription_manager"),
+    Agent = require("./models/agent"),
+    Channel = require("./models/channel"),
+    InMemoryMQ = require("./mqs/in_memory"),
+    SubscriptionManager = require("./mqs/subscription_manager"),
     sys = require('sys'),
     EventEmitter = require('events').EventEmitter;
 
@@ -21,9 +17,17 @@ var PushIt = function (server, options) {
 
   this.server = server;
   
-  this.io = options.socket || socketIo.listen(this.server);
+  if (options.socket){
+    this.sock = options.socket;
+  }else{
+    var sockjs_opts = {sockjs_url: "http://majek.github.com/sockjs-client/sockjs-latest.min.js"};
+    var sjs_echo = new sjs.Server(sockjs_opts);
+    sjs_echo.installHandlers(this.server, {prefix:'[/]pi/'});
+    this.sock = sjs_echo;
+  }
+
   var self = this;
-  this.io.on('connection', function (client) {
+  this.sock.on('open', function (client) {
     self.emit('connection', client);
   });
   if (!options.skipSetupIO) this.setupIO();
@@ -67,26 +71,26 @@ extend(PushIt.prototype, {
   setupIO: function () {
     var pushIt = this;
     
-    this.io.on('connection', function(client){
+    this.sock.on('open', function(client){
       pushIt.__onConnection(client);
       
       client.on('message', function(message){
-        pushIt.__onMessage(client, message);
+        pushIt.__onMessage(client, message.data);
       });
 
-      client.on('disconnect', function(){
+      client.on('close', function(){
         pushIt.__onDisconnect(client);
       });
     });
   },
 
-  //this is when the socketIO connection happens
+  //this is when the sockjs connection happens
   __onConnection: function (client) {
     //setup authentication-request timeout, possibly
   },
 
-  //this is when socketIO says there is a message
-  __onMessage: function (client, message) {
+  //this is when sockjs says there is a message
+  __onMessage: function (client, message) {    
     var handler, requestKind;
 
     //verify required fields
@@ -141,7 +145,7 @@ extend(PushIt.prototype, {
   },
 
   //internal subscription request processing, used to set up req context before auth decision
-  __subscribe: function (client, message) {
+  __subscribe: function (client, message) {    
     if (message.data == undefined || message.data.channel == undefined) {
       message.successful = false;
       message.error = "you must have a data.channel in your subscribe message";
