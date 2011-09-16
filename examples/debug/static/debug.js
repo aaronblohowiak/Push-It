@@ -11,8 +11,7 @@ $(function() {
   }
   
 	window.pushIt = new PushIt({
-		channels: [],
-  		endpoint: window.location.protocol+"//"+window.location.hostname+":"+window.location.port.toString()+"/pi/"
+		channels: []
 	});
 
 	$(document).delegate('#post', 'submit', function(event) {

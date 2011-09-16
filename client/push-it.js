@@ -32,7 +32,7 @@
         socket = options.socket;
       }else{
         if(!options.endpoint){
-          alert("You must pass an endpoint to initialize Push-It.");
+          options.endpoint = window.location.protocol+"//"+window.location.hostname+":"+window.location.port.toString()+"/pi/";
         }
         var socket = new SockJS(options.endpoint);
       }
