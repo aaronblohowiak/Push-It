@@ -2,6 +2,8 @@
 
 Push-It is no longer maintained.  If you'd like to become the maintainer, please email me - aaron.blohowiak@gmail.com
 
+For alternatives, please see SockJS or Socket.io
+
 
 
 # Introduction
