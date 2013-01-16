@@ -1,3 +1,9 @@
+# No longer maintained.
+
+Push-It is no longer maintained.  If you'd like to become the maintainer, please email me - aaron.blohowiak@gmail.com
+
+
+
 # Introduction
   
 Push-It gives you an API for realtime pub/sub in the browser. On the server, it gives you hooks for security and message routing.  It is fast and cross-browser compatible.
